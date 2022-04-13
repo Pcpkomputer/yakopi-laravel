@@ -96,6 +96,23 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         }
     });
 
+    Route::post("/presensi-pulang", function(Request $request){
+        $token = $request->bearerToken();
+    
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $filename = $request->filename;
+        $timezone = $request->timezone;
+
+        $updatepresensi = DB::insert("UPDATE yakopi_absen SET jam_keluar_absen=?,foto_absen_keluar=? WHERE tgl_absen=CURDATE() AND id_pengguna=?",[$timezone,"assets/absenKeluar/".$filename,$json->id_pengguna]);
+    
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil melakukan presensi pulang"
+        ];
+    });
+
     Route::post("/presensi-masuk", function(Request $request){
         $token = $request->bearerToken();
     
@@ -114,13 +131,13 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
     
             return [
                 "success"=>true,
-                "msg"=>"Berhasil melakukan presensi."
+                "msg"=>"Berhasil melakukan presensi"
             ];
         }
         else{
             return [
                 "success"=>false,
-                "msg"=>"Sudah melakukan presensi."
+                "msg"=>"Sudah melakukan presensi"
             ];
         }
     });
