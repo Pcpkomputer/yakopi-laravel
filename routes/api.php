@@ -66,6 +66,72 @@ Route::post("/auth", function (Request $request){
 
 
 Route::middleware([AuthMasterMiddleware::class])->group(function () {
+
+    //GENERAL API START
+
+    // INFORMATION API START
+
+    Route::get("/mobilebuildnumber", function(Request $request){
+        $version = DB::select("SELECT buildnumber,changelog_mobile FROM yakopi_identitas WHERE id_profile=1");
+        return [
+            "buildnumber"=>$version[0]->buildnumber,
+            "changelog_mobile"=>$version[0]->changelog_mobile
+        ];
+    });
+
+    // LOCATION API START
+
+    Route::get("/city", function (Request $request){
+        $city = DB::select("SELECT * FROM yakopi_cities");
+        return $city;
+    });
+
+    Route::get("/city/{id}", function (Request $request, $id){
+        $city = DB::select("SELECT * FROM yakopi_cities WHERE prov_id=?",[$id]);
+        return $city;
+    });
+
+    Route::get("/district", function (Request $request){
+        $district = DB::select("SELECT * FROM yakopi_districts");
+        return $district;
+    });
+
+    Route::get("/district/{id}", function (Request $request, $id){
+        $district = DB::select("SELECT * FROM yakopi_districts WHERE city_id=?",[$id]);
+        return $district;
+    });
+
+    Route::get("/province", function (Request $request){
+        $province = DB::select("SELECT * FROM yakopi_provinces");
+        return $province;
+    });
+
+    Route::get("/province/{id}", function (Request $request, $id){
+        $province = DB::select("SELECT * FROM yakopi_provinces WHERE prov_id=?",[$id]);
+        return $province;
+    });
+
+    // LOCATION API END
+
+    // PROJECT API START
+
+    Route::get("/project", function (Request $request){
+        $project = DB::select("SELECT * FROM yakopi_project");
+        return $project;
+    });
+
+    Route::get("/project/{id}", function (Request $request, $id){
+        $project = DB::select("SELECT * FROM yakopi_project WHERE id_project=?",[$id]);
+        return $project;
+    });
+
+    // PROJECT API END
+
+    // GENERAL API END
+
+
+    // PRESENSI START
+
     Route::post("/cek-presensi", function (Request $request){
         $token = $request->bearerToken();
 
@@ -104,8 +170,10 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
         $filename = $request->filename;
         $timezone = $request->timezone;
+        $latitude = $request->latitude;
+        $longitude = $request->longitude;
 
-        $updatepresensi = DB::insert("UPDATE yakopi_absen SET jam_keluar_absen=?,foto_absen_keluar=? WHERE tgl_absen=CURDATE() AND id_pengguna=?",[$timezone,"assets/absenKeluar/".$filename,$json->id_pengguna]);
+        $updatepresensi = DB::insert("UPDATE yakopi_absen SET jam_keluar_absen=?,foto_absen_keluar=?, lat_absen_keluar=?, long_absen_keluar=? WHERE id_pengguna=? AND tgl_absen=CURDATE()",[$timezone,$filename,$latitude,$longitude,$json->id_pengguna]);
     
         return [
             "success"=>true,
@@ -140,5 +208,115 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
                 "msg"=>"Sudah melakukan presensi"
             ];
         }
+    });
+
+    // PRESENSI END
+
+    // COMMUNITY DEVELOPMENT START
+
+    Route::get("/community-register", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+    
+        $community_development = DB::select("SELECT * FROM yakopi_community_register");
+    
+        return [
+            "success"=>true,
+            "data"=>$community_development
+        ];
+    });
+
+    Route::get("/community-register/{id}", function(Request $request, $id){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+    
+        $community_development = DB::select("SELECT * FROM yakopi_community_register WHERE id_community_register=?",[$id]);
+    
+        return [
+            "success"=>true,
+            "data"=>$community_development
+        ];
+    });
+    
+    Route::post("/community-register", function(Request $request){
+        $token = $request->bearerToken();
+    
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+    
+        $nomor_mou = $request->nomor_mou;
+        $nama_kelompok = $request->nama_kelompok;
+        $ketua_kelompok = $request->ketua_kelompok;
+        $id_project = $request->id_project;
+        $id_provinces = $request->id_provinces;
+        $id_cities = $request->id_cities;
+        $id_districts = $request->id_districts;
+        $nama_desa = $request->nama_desa;
+        $nama_dusun = $request->nama_dusun;
+        $jumlah_site = $request->jumlah_site;
+        $jumlah_plot = $request->jumlah_plot;
+        $luas_area_mou = $request->luas_area_mou;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+    
+        $insertcommunity = DB::insert("INSERT INTO yakopi_community_register VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",[$nomor_mou,$nama_kelompok,$ketua_kelompok,$id_project,$id_provinces,$id_cities,$id_districts,$nama_desa,$nama_dusun,$jumlah_site,$jumlah_plot,$luas_area_mou,$created_by,$created_time]);
+    
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil melakukan pendaftaran"
+        ];
+    });
+    
+    Route::get("/silvoshery", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+    
+        $silvoshery = DB::select("SELECT * FROM yakopi_silvoshery");
+    
+        return [
+            "success"=>true,
+            "data"=>$silvoshery
+        ];
+    });
+
+    Route::get("/silvoshery/{id}", function(Request $request, $id){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+    
+        $silvoshery = DB::select("SELECT * FROM yakopi_silvoshery WHERE id_silvoshery=?",[$id]);
+    
+        return [
+            "success"=>true,
+            "data"=>$silvoshery
+        ];
+    });
+    
+    Route::post("/silvoshery", function(Request $request){
+        $token = $request->bearerToken();
+    
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+    
+        $id_project = $request->id_project;
+        $id_provinces = $request->id_provinces;
+        $id_cities = $request->id_cities;
+        $id_districts = $request->id_districts;
+        $nama_desa = $request->nama_desa;
+        $nama_dusun = $request->nama_dusun;
+        $kode_silvoshery = $request->kode_silvoshery;
+        $pemilik_tambak = $request->pemilik_tambak;
+        $jumlah_tanaman = $request->jumlah_tanaman;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+    
+        $insertsilvoshery = DB::insert("INSERT INTO yakopi_silvoshery VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?)",[$id_project,$id_provinces,$id_cities,$id_districts,$nama_desa,$nama_dusun,$kode_silvoshery,$pemilik_tambak,$jumlah_tanaman,$created_by,$created_time]);
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil melakukan pendaftaran"
+        ];
     });
 });
