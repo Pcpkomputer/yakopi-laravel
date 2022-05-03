@@ -88,27 +88,42 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
     Route::get("/city/{id}", function (Request $request, $id){
         $city = DB::select("SELECT * FROM yakopi_cities WHERE prov_id=?",[$id]);
-        return $city;
+        return [
+            "success"=>true,
+            "data"=>$city
+        ];
     });
 
     Route::get("/district", function (Request $request){
         $district = DB::select("SELECT * FROM yakopi_districts");
-        return $district;
+        return [
+            "success"=>true,
+            "data"=>$district
+        ];
     });
 
     Route::get("/district/{id}", function (Request $request, $id){
         $district = DB::select("SELECT * FROM yakopi_districts WHERE city_id=?",[$id]);
-        return $district;
+        return [
+            "success"=>true,
+            "data"=>$district
+        ];
     });
 
     Route::get("/province", function (Request $request){
         $province = DB::select("SELECT * FROM yakopi_provinces");
-        return $province;
+        return [
+            "success"=>true,
+            "data"=>$province
+        ];
     });
 
     Route::get("/province/{id}", function (Request $request, $id){
         $province = DB::select("SELECT * FROM yakopi_provinces WHERE prov_id=?",[$id]);
-        return $province;
+        return [
+            "success"=>true,
+            "data"=>$province
+        ];
     });
 
     // LOCATION API END
@@ -117,29 +132,46 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
     Route::get("/photo_restoration", function (Request $request){
         $photo = DB::select("SELECT * FROM yakopi_photo_restoration LIMIT 10");
-        return $photo;
+        return [
+            "success"=>true,
+            "data"=>$photo
+        ];
     });
 
     Route::get("/photo_comdev", function (Request $request){
         $photo = DB::select("SELECT * FROM yakopi_photo_comdev LIMIT 10");
-        return $photo;
+        return [
+            "success"=>true,
+            "data"=>$photo
+        ];
     });
 
     Route::get("/photo_research", function (Request $request){
         $photo = DB::select("SELECT * FROM yakopi_photo_research LIMIT 10");
-        return $photo;
+        return [
+            "success"=>true,
+            "data"=>$photo
+        ];
     });
+
+    // PHOTO API END
 
     // PROJECT API START
 
     Route::get("/project", function (Request $request){
         $project = DB::select("SELECT * FROM yakopi_project");
-        return $project;
+        return [
+            "success"=>true,
+            "data"=>$project
+        ];
     });
 
     Route::get("/project/{id}", function (Request $request, $id){
         $project = DB::select("SELECT * FROM yakopi_project WHERE id_project=?",[$id]);
-        return $project;
+        return [
+            "success"=>true,
+            "data"=>$project
+        ];
     });
 
     // PROJECT API END
@@ -228,6 +260,165 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
     });
 
     // PRESENSI END
+
+    // RESTORATION START
+
+    // LAND ASSESSMENT START
+    Route::get("/land-assessment", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $land_assessment = DB::select("SELECT * FROM yakopi_land_assessment");
+        return [
+            "success"=>true,
+            "data"=>$land_assessment
+        ];
+    });
+
+    Route::get("/land-assessment/{id}", function (Request $request, $id){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $land_assessment = DB::select("SELECT * FROM yakopi_land_assessment WHERE id_land_assessment=?",[$id]);
+        return [
+            "success"=>true,
+            "data"=>$land_assessment
+        ];
+    });
+
+    Route::get("/history-land-assessment/{id}", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $land_assessment = DB::select("SELECT * FROM yakopi_land_assessment WHERE id_pengguna=?",[$json->id_pengguna]);
+        return [
+            "success"=>true,
+            "data"=>$land_assessment
+        ];
+    });
+
+    Route::post("/land-assessment", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $site_code = $request->site_code;
+        $id_project = $request->id_project;
+        $id_provinces = $request->id_provinces;
+        $id_cities = $request->id_cities;
+        $id_districts = $request->id_districts;
+        $date_land_assessment = $request->date_land_assessment;
+        $lat_land_assessment = $request->lat_land_assessment;
+        $long_land_assessment = $request->long_land_assessment;
+        $nama_desa = $request->nama_desa;
+        $nama_dusun = $request->nama_dusun;
+        $posisi_site = $request->posisi_site;
+        $perkiraan_jumlah_plot = $request->perkiraan_jumlah_plot;
+        $sejarah_lokasi = $request->sejarah_lokasi;
+        $akses_jalan = $request->akses_jalan;
+        $kondisi_lahan = $request->kondisi_lahan;
+        $tegakan_mangrove = $request->tegakan_mangrove;
+        $adanya_perdu = $request->adanya_perdu;
+        $potensi_gangguan_hewan_peliharaan = $request->potensi_gangguan_hewan_peliharaan;
+        $potensi_hama = $request->potensi_hama;
+        $potensi_gangguan_tritip = $request->potensi_gangguan_tritip;
+        $potensi_gangguan_kepiting = $request->potensi_gangguan_kepiting;
+        $potensi_gempuran_ombak = $request->potensi_gempuran_ombak;
+        $jenis_tanah = $request->jenis_tanah;
+        $catatan_khusus_1 = $request->catatan_khusus_1;
+        $catatan_khusus_2 = $request->catatan_khusus_2;
+        $nama_surveyor = $request->nama_surveyor;
+        $ttd_surveyor = $request->ttd_surveyor;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+        $status = 0;
+
+        $land_assessment = DB::insert("INSERT INTO yakopi_land_assessment VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?",[$site_code,$id_project,$id_provinces,$id_cities,$id_districts,$date_land_assessment,$lat_land_assessment,$long_land_assessment,$nama_desa,$nama_dusun,$posisi_site,$perkiraan_jumlah_plot,$sejarah_lokasi,$akses_jalan,$kondisi_lahan,$tegakan_mangrove,$adanya_perdu,$potensi_gangguan_hewan_peliharaan,$potensi_hama,$potensi_gangguan_tritip,$potensi_gangguan_kepiting,$potensi_gempuran_ombak,$jenis_tanah,$catatan_khusus_1,$catatan_khusus_2,$nama_surveyor,$ttd_surveyor,$created_by,$created_time,$status]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil menambahkan land assessment"
+        ];
+    });
+
+    Route::post("/approve-land-assessment", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_land_assessment = $request->id_land_assessment;
+        $status = 1;
+
+        $land_assessment = DB::update("UPDATE yakopi_land_assessment SET status=? WHERE id_land_assessment=?",[$status,$id_land_assessment]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil mengkonfirmasi land assessment"
+        ];
+    });
+
+    Route::post("/reject-land-assessment", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_land_assessment = $request->id_land_assessment;
+        $status = 2;
+
+        $land_assessment = DB::update("UPDATE yakopi_land_assessment SET status=? WHERE id_land_assessment=?",[$status,$id_land_assessment]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil menolak land assessment"
+        ];
+    });
+
+    Route::get("/photo-land-assessment", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_land_assessment = $request->id_land_assessment;
+
+        $photo_land_assessment = DB::select("SELECT * FROM yakopi_land_assessment_photo WHERE id_land_assessment=?",[$id_land_assessment]);
+        return [
+            "success"=>true,
+            "data"=>$photo_land_assessment
+        ];
+    });
+
+    Route::get("/video-land-assessment", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_land_assessment = $request->id_land_assessment;
+
+        $video_land_assessment = DB::select("SELECT * FROM yakopi_land_assessment_video WHERE id_land_assessment=?",[$id_land_assessment]);
+        return [
+            "success"=>true,
+            "data"=>$video_land_assessment
+        ];
+    });
+
+    Route::get("/drone-land-assessment", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_land_assessment = $request->id_land_assessment;
+
+        $drone_land_assessment = DB::select("SELECT * FROM yakopi_land_assessment_drone WHERE id_land_assessment=?",[$id_land_assessment]);
+        return [
+            "success"=>true,
+            "data"=>$drone_land_assessment
+        ];
+    });
+
+    // LAND ASSESSMENT FINISH
 
     // COMMUNITY DEVELOPMENT START
 
