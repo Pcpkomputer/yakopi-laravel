@@ -113,6 +113,23 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
     // LOCATION API END
 
+    // PHOTO API START
+
+    Route::get("/photo_restoration", function (Request $request){
+        $photo = DB::select("SELECT * FROM yakopi_photo_restoration LIMIT 10");
+        return $photo;
+    });
+
+    Route::get("/photo_comdev", function (Request $request){
+        $photo = DB::select("SELECT * FROM yakopi_photo_comdev LIMIT 10");
+        return $photo;
+    });
+
+    Route::get("/photo_research", function (Request $request){
+        $photo = DB::select("SELECT * FROM yakopi_photo_research LIMIT 10");
+        return $photo;
+    });
+
     // PROJECT API START
 
     Route::get("/project", function (Request $request){
