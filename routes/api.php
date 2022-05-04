@@ -261,6 +261,69 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
     // PRESENSI END
 
+    // PROFILE START
+
+    Route::get("/profile", function (Request $request){
+        $token = $request->bearerToken();
+
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $profile = DB::select("SELECT * FROM yakopi_pengguna WHERE id_pengguna=?",[$json->id_pengguna]);
+        return [
+            "success"=>true,
+            "data"=>$profile[0]
+        ];
+    });
+
+    Route::post("/update-profile", function (Request $request){
+        $token = $request->bearerToken();
+
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $username = $request->username;
+        $namalengkap = $request->namalengkap;
+        $jenkel = $request->jenkel;
+        $tanggallahir = $request->tanggallahir;
+        $alamat = $request->alamat;
+        $email = $request->email;
+        $notelepon = $request->notelepon;
+        $newpassword = $request->newpassword;
+        $fotoprofil = $request->fotoprofil;
+
+        if($newpassword==""){
+            $newpassword = $json->password;
+        }
+        else{
+            $newpassword = sha1($json->password);
+        }
+    
+    
+        $update = DB::update("UPDATE yakopi_pengguna SET password=?,email=?,no_hp=?,nama_lengkap=?,foto_pengguna=?,jenkel=?,tgl_lahir=?,alamat=? 
+        WHERE id_pengguna=?",[$newpassword,$email,$notelepon,$namalengkap,$fotoprofil,$jenkel,$tanggallahir,$alamat,$json->id_pengguna]);
+
+        $newdata = DB::select("SELECT * FROM yakopi_pengguna WHERE id_pengguna=?",[$json->id_pengguna]);
+
+        $modul = DB::select("SELECT * FROM yakopi_hak_akses WHERE nama_hak_akses=?",[$newdata[0]->hak_akses]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil mengubah profil",
+            "credentials"=>[
+                "data"=>$newdata[0],
+                "modul"=>$modul[0],
+                "token"=>Crypt::encryptString(json_encode($newdata[0]))
+            ]
+        ];
+
+    });
+
+
+    // PROFILE END
+
+    // GENERAL API END
+
     // RESTORATION START
 
     // LAND ASSESSMENT START
