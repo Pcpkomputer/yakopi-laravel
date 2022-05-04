@@ -296,7 +296,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
             $newpassword = $json->password;
         }
         else{
-            $newpassword = sha1($json->password);
+            $newpassword = sha1($request->newpassword);
         }
     
     
