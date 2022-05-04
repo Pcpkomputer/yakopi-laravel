@@ -356,7 +356,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
 
-        $land_assessment = DB::select("SELECT * FROM yakopi_land_assessment WHERE id_pengguna=?",[$json->id_pengguna]);
+        $land_assessment = DB::select("SELECT * FROM yakopi_land_assessment WHERE created_by=?",[$json->id_pengguna]);
         return [
             "success"=>true,
             "data"=>$land_assessment
@@ -399,8 +399,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $created_time = date("Y-m-d H:i:s");
         $status = 0;
 
-        $land_assessment = DB::insert("INSERT INTO yakopi_land_assessment VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?",[$site_code,$id_project,$id_provinces,$id_cities,$id_districts,$date_land_assessment,$lat_land_assessment,$long_land_assessment,$nama_desa,$nama_dusun,$posisi_site,$perkiraan_jumlah_plot,$sejarah_lokasi,$akses_jalan,$kondisi_lahan,$tegakan_mangrove,$adanya_perdu,$potensi_gangguan_hewan_peliharaan,$potensi_hama,$potensi_gangguan_tritip,$potensi_gangguan_kepiting,$potensi_gempuran_ombak,$jenis_tanah,$catatan_khusus_1,$catatan_khusus_2,$nama_surveyor,$ttd_surveyor,$created_by,$created_time,$status]);
-
+        $land_assessment = DB::insert("INSERT INTO yakopi_land_assessment (id_land_assessment,site_code,id_project,id_provinces,id_cities,id_districts,date_land_assessment,lat_land_assessment,long_land_assessment,nama_desa,nama_dusun,posisi_site,perkiraan_jumlah_plot,sejarah_lokasi,akses_jalan,kondisi_lahan,tegakan_mangrove,adanya_perdu,potensi_gangguan_hewan_peliharaan,potensi_hama,potensi_gangguan_tritip,potensi_gangguan_kepiting,potensi_gempuran_ombak,jenis_tanah,catatan_khusus_1,catatan_khusus_2,nama_surveyor,ttd_surveyor,created_by,created_time,status) VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",[$site_code,$id_project,$id_provinces,$id_cities,$id_districts,$date_land_assessment,$lat_land_assessment,$long_land_assessment,$nama_desa,$nama_dusun,$posisi_site,$perkiraan_jumlah_plot,$sejarah_lokasi,$akses_jalan,$kondisi_lahan,$tegakan_mangrove,$adanya_perdu,$potensi_gangguan_hewan_peliharaan,$potensi_hama,$potensi_gangguan_tritip,$potensi_gangguan_kepiting,$potensi_gempuran_ombak,$jenis_tanah,$catatan_khusus_1,$catatan_khusus_2,$nama_surveyor,$ttd_surveyor,$created_by,$created_time,$status]);
         return [
             "success"=>true,
             "msg"=>"Berhasil menambahkan land assessment"
