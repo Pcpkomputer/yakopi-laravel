@@ -332,7 +332,13 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
 
-        $land_assessment = DB::select("SELECT * FROM yakopi_land_assessment");
+        $land_assessment = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_land_assessment AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        ");
         return [
             "success"=>true,
             "data"=>$land_assessment
