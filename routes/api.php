@@ -486,6 +486,35 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         ];
     });
 
+    Route::delete("/delete-land-assessment", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_land_assessment = $request->id_land_assessment;
+        $cekLandAssessment = DB::select("SELECT * FROM yakopi_land_assessment WHERE id_land_assessment=?",[$id_land_assessment]);
+
+        if(count($cekLandAssessment) > 0){
+            if($cekLandAssessment[0]->status == 0){
+                $land_assessment = DB::delete("DELETE FROM yakopi_land_assessment WHERE id_land_assessment=?",[$id_land_assessment]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Berhasil menghapus land assessment"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Land assessment sudah di konfirmasi"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Land assessment tidak ditemukan"
+            ];
+        }
+    });
+
     // LAND ASSESSMENT FINISH
 
     // COMMUNITY DEVELOPMENT START
