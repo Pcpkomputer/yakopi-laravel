@@ -471,6 +471,61 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         ];
     });
 
+    Route::post("/add-photo-land-assessment", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_land_assessment = $request->id_land_assessment;
+        $keterangan_land_assessment_photo = $request->keterangan_land_assessment_photo;
+        $link_land_assessment_photo = $request->link_land_assessment_photo;
+        $file_land_assessment_photo = $request->file_land_assessment_photo;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $photo_land_assessment = DB::insert("INSERT INTO yakopi_land_assessment_photo (id_land_assessment_photo,id_land_assessment,keterangan_land_assessment_photo,link_land_assessment_photo,file_land_assessment_photo,created_by,created_time) VALUES (null,?,?,?,?,?,?)",[$id_land_assessment,$keterangan_land_assessment_photo,$link_land_assessment_photo,$file_land_assessment_photo,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil menambahkan photo land assessment"
+        ];
+    });
+
+    Route::delete("/delete-photo-land-assessment", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_land_assessment_photo = $request->id_land_assessment_photo;
+
+        $cekIdLandAssessment = DB::select("SELECT * FROM yakopi_land_assessment_photo WHERE id_land_assessment_photo=?",[$id_land_assessment_photo]);
+
+        if(count($cekIdLandAssessment)>0){
+            $id_land_assessment = $cekIdLandAssessment[0]->id_land_assessment;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_land_assessment WHERE id_land_assessment=?",[$id_land_assessment]);
+
+            if($cekStatus[0]->status=="0"){
+                $photo_land_assessment = DB::delete("DELETE FROM yakopi_land_assessment_photo WHERE id_land_assessment_photo=?",[$id_land_assessment_photo]);
+            
+                return [
+                    "success"=>true,
+                    "msg"=>"Berhasil menghapus photo land assessment"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Gagal menghapus photo land assessment. Land assessment sudah di konfirmasi"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Gagal menghapus photo land assessment. Data tidak ditemukan"
+            ];
+        }
+    });
+
     Route::post("/video-land-assessment", function (Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
@@ -485,6 +540,63 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         ];
     });
 
+    Route::post("/add-video-land-assessment", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_land_assessment = $request->id_land_assessment;
+        $keterangan_land_assessment_video = $request->keterangan_land_assessment_video;
+        $link_land_assessment_video = $request->link_land_assessment_video;
+        $file_land_assessment_video = $request->file_land_assessment_video;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $video_land_assessment = DB::insert("INSERT INTO yakopi_land_assessment_video (id_land_assessment_video,id_land_assessment,keterangan_land_assessment_video,link_land_assessment_video,file_land_assessment_video,created_by,created_time) VALUES (null,?,?,?,?,?,?)",[$id_land_assessment,$keterangan_land_assessment_video,$link_land_assessment_video,$file_land_assessment_video,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil menambahkan video land assessment"
+        ];
+    });
+
+    Route::delete("/delete-video-land-assessment", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_land_assessment_video = $request->id_land_assessment_video;
+
+        $cekIdLandAssessment = DB::select("SELECT * FROM yakopi_land_assessment_video WHERE id_land_assessment_video=?",[$id_land_assessment_video]);
+
+        if(count($cekIdLandAssessment)>0){
+            $id_land_assessment = $cekIdLandAssessment[0]->id_land_assessment;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_land_assessment WHERE id_land_assessment=?",[$id_land_assessment]);
+
+            if($cekStatus[0]->status=="0"){
+                $video_land_assessment = DB::delete("DELETE FROM yakopi_land_assessment_video WHERE id_land_assessment_video=?",[$id_land_assessment_video]);
+            
+                return [
+                    "success"=>true,
+                    "msg"=>"Berhasil menghapus video land assessment"
+                ];
+
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Gagal menghapus video land assessment. Land assessment sudah di konfirmasi"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Gagal menghapus video land assessment. Data tidak ditemukan"
+            ];
+        }
+
+    });
+
     Route::post("/drone-land-assessment", function (Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
@@ -497,6 +609,64 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
             "success"=>true,
             "data"=>$drone_land_assessment
         ];
+    });
+
+    Route::post("/add-drone-land-assessment", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_land_assessment = $request->id_land_assessment;
+        $keterangan_land_assessment_drone = $request->keterangan_land_assessment_drone;
+        $link_land_assessment_drone = $request->link_land_assessment_drone;
+        $file_land_assessment_drone = $request->file_land_assessment_drone;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $drone_land_assessment = DB::insert("INSERT INTO yakopi_land_assessment_drone (id_land_assessment_drone,id_land_assessment,keterangan_land_assessment_drone,link_land_assessment_drone,file_land_assessment_drone,created_by,created_time) VALUES (null,?,?,?,?,?,?)",[$id_land_assessment,$keterangan_land_assessment_drone,$link_land_assessment_drone,$file_land_assessment_drone,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil menambahkan drone land assessment"
+        ];
+
+    });
+
+    Route::delete("/delete-drone-land-assessment", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_land_assessment_drone = $request->id_land_assessment_drone;
+
+        $cekIdLandAssessment = DB::select("SELECT * FROM yakopi_land_assessment_drone WHERE id_land_assessment_drone=?",[$id_land_assessment_drone]);
+
+        if(count($cekIdLandAssessment)>0){
+            $id_land_assessment = $cekIdLandAssessment[0]->id_land_assessment;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_land_assessment WHERE id_land_assessment=?",[$id_land_assessment]);
+
+            if($cekStatus[0]->status=="0"){
+                $drone_land_assessment = DB::delete("DELETE FROM yakopi_land_assessment_drone WHERE id_land_assessment_drone=?",[$id_land_assessment_drone]);
+            
+                return [
+                    "success"=>true,
+                    "msg"=>"Berhasil menghapus drone land assessment"
+                ];
+
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Gagal menghapus drone land assessment. Land assessment sudah di konfirmasi"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Gagal menghapus drone land assessment. Data tidak ditemukan"
+            ];
+        }
+
     });
 
     Route::delete("/delete-land-assessment", function (Request $request){
