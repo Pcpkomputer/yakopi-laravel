@@ -319,7 +319,6 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
     });
 
-
     // PROFILE END
 
     // GENERAL API END
@@ -369,7 +368,14 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
 
-        $land_assessment = DB::select("SELECT * FROM yakopi_land_assessment WHERE created_by=?",[$json->id_pengguna]);
+        $land_assessment = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_land_assessment AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        WHERE la.created_by=?
+        ",[$json->id_pengguna]);
         return [
             "success"=>true,
             "data"=>$land_assessment
@@ -523,6 +529,462 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
     });
 
     // LAND ASSESSMENT FINISH
+
+    // SEED COLLECTING START
+
+    Route::get("/seed-collecting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $seed_collecting = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_collecting_seed AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        ");
+
+        return [
+            "success"=>true,
+            "data"=>$seed_collecting
+        ];
+    });
+
+    Route::get("/seed-collecting/{id}", function (Request $request,$id){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $seed_collecting = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_collecting_seed AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        WHERE la.id_collecting_seed=?
+        ",[$id]);
+
+        $detail_collecting_seed = DB::select("
+        SELECT * FROM yakopi_detail_collecting_seed WHERE id_collecting_seed=?",[$id]);
+
+        return [
+            "success"=>true,
+            "dataSeedCollecting"=>$seed_collecting[0],
+            "dataDetailCollectingSeed"=>$detail_collecting_seed[0]
+        ];
+    });
+
+    Route::get("/history-seed-collecting/{id_pengguna}", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $history_seed_collecting = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_collecting_seed AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        WHERE la.created_by=?
+        ",[$json->id_pengguna]);
+
+        return [
+            "success"=>true,
+            "data"=>$history_seed_collecting
+        ];
+    });
+
+    Route::post("/seed-collecting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_project = $request->project;
+        $id_provinces = $request->province;
+        $id_cities = $request->city;
+        $id_districts = $request->district;
+        $lat_collecting_seed = $request->lat_collecting_seed;
+        $long_collecting_seed = $request->long_collecting_seed;
+        $nama_desa = $request->nama_desa;
+        $nama_dusun = $request->nama_dusun;
+        $trasportasi_1 = $request->trasportasi_1;
+        $trasportasi_2 = $request->trasportasi_2;
+        $catatan_1 = $request->catatan_1;
+        $catatan_2 = $request->catatan_2;
+        $dilaporkan_oleh = $request->dilaporkan_oleh;
+        $ttd_pelapor = '';
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $seedCollecting = DB::insert("INSERT INTO yakopi_collecting_seed (id_collecting_seed,id_project,id_provinces,id_cities,id_districts,lat_collecting_seed,long_collecting_seed,nama_desa,nama_dusun,trasportasi_1,trasportasi_2,catatan_1,catatan_2,dilaporkan_oleh,ttd_pelapor,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+        ,[null,$id_project,$id_provinces,$id_cities,$id_districts,$lat_collecting_seed,$long_collecting_seed,$nama_desa,$nama_dusun,$trasportasi_1,$trasportasi_2,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time]);
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil disimpan"
+        ];
+
+    });
+
+    Route::post("/approve-seed-collecting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_collecting_seed = $request->id_collecting_seed;
+        $status = 1;
+
+        $approveSeedCollecting = DB::update("UPDATE yakopi_collecting_seed SET status=? WHERE id_collecting_seed=?",[$status,$id_collecting_seed]);
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil Mengkonfirmasi Data"
+        ];
+    });
+
+    Route::post("/reject-seed-collecting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_collecting_seed = $request->id_collecting_seed;
+        $status = 2;
+
+        $rejectSeedCollecting = DB::update("UPDATE yakopi_collecting_seed SET status=? WHERE id_collecting_seed=?",[$status,$id_collecting_seed]);
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil Menolak Data"
+        ];
+    });
+
+    Route::post("/kind-seed-collecting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_collecting_seed = $request->id_collecting_seed;
+
+        $kind_seed_collecting = DB::select("SELECT * FROM yakopi_detail_collecting_seed WHERE id_collecting_seed=?",[$id_collecting_seed]);
+
+        return [
+            "success"=>true,
+            "data"=>$kind_seed_collecting
+        ];
+    });
+
+    Route::post("/add-kind-seed-collecting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_collecting_seed = $request->id_collecting_seed;
+        $tanggal_collecting = $request->tanggal_collecting;
+        $jumlah_pekerja = $request->jumlah_pekerja;
+        $r_mucronoto = $request->r_mucronoto;
+        $r_styloso = $request->r_styloso;
+        $r_apiculata = $request->r_apiculata;
+        $avicennia_spp = $request->avicennia_spp;
+        $ceriops_spp = $request->ceriops_spp;
+        $xylocarpus_spp = $request->xylocarpus_spp;
+        $bruguiera_spp = $request->bruguiera_spp;
+        $sonneratia_spp = $request->sonneratia_spp;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $kindSeedCollecting = DB::insert("INSERT INTO yakopi_detail_collecting_seed (id_detail_collecting_seed,id_collecting_seed,tanggal_collecting,jumlah_pekerja,r_mucronoto,r_styloso,r_apiculata,avicennia_spp,ceriops_spp,xylocarpus_spp,bruguiera_spp,sonneratia_spp,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+        ,[null,$id_collecting_seed,$tanggal_collecting,$jumlah_pekerja,$r_mucronoto,$r_styloso,$r_apiculata,$avicennia_spp,$ceriops_spp,$xylocarpus_spp,$bruguiera_spp,$sonneratia_spp,$created_by,$created_time]);
+        
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil disimpan"
+        ];
+    });
+
+    Route::delete("/delete-kind-seed-collecting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_detail_collecting_seed = $request->id_detail_collecting_seed;
+        
+        $cekIdCollection = DB::select("SELECT * FROM yakopi_detail_collecting_seed WHERE id_detail_collecting_seed=?",[$id_detail_collecting_seed]);
+        if(count($cekIdCollection)>0){
+            $id_collecting_seed = $cekIdCollection[0]->id_collecting_seed;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_collecting_seed WHERE id_collecting_seed=?",[$id_collecting_seed]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_detail_collecting_seed WHERE id_detail_collecting_seed=?",[$id_detail_collecting_seed]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::post("/photo-seed-collecting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_collecting_seed = $request->id_collecting_seed;
+
+        $photo_seed_collecting = DB::select("SELECT * FROM yakopi_collecting_seed_photo WHERE id_collecting_seed=?",[$id_collecting_seed]);
+
+        return [
+            "success"=>true,
+            "data"=>$photo_seed_collecting
+        ];
+    });
+
+    Route::post("/add-photo-seed-collecting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_collecting_seed = $request->id_collecting_seed;
+        $keterangan_collecting_seed_photo = $request->keterangan_collecting_seed_photo;
+        $link_collecting_seed_photo = $request->link_collecting_seed_photo;
+        $file_collecting_seed_photo = $request->file_collecting_seed_photo;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $photoSeedCollecting = DB::insert("INSERT INTO yakopi_collecting_seed_photo (id_collecting_seed_photo,id_collecting_seed,keterangan_collecting_seed_photo,link_collecting_seed_photo,file_collecting_seed_photo,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?)"
+        ,[null,$id_collecting_seed,$keterangan_collecting_seed_photo,$link_collecting_seed_photo,$file_collecting_seed_photo,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil disimpan"
+        ];
+
+    });
+
+    Route::delete("/delete-photo-seed-collecting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_collecting_seed_photo = $request->id_collecting_seed_photo;
+
+        $cekIdCollection = DB::select("SELECT * FROM yakopi_collecting_seed_photo WHERE id_collecting_seed_photo=?",[$id_collecting_seed_photo]);
+
+        if(count($cekIdCollection)>0){
+            $id_collecting_seed = $cekIdCollection[0]->id_collecting_seed;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_collecting_seed WHERE id_collecting_seed=?",[$id_collecting_seed]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_collecting_seed_photo WHERE id_collecting_seed_photo=?",[$id_collecting_seed_photo]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::post("/video-seed-collecting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_collecting_seed = $request->id_collecting_seed;
+
+        $videoSeedCollecting = DB::select("SELECT * FROM yakopi_collecting_seed_video WHERE id_collecting_seed_video=?",[$id_collecting_seed]);
+
+        return [
+            "success"=>true,
+            "data"=>$videoSeedCollecting
+        ];
+    });
+
+    Route::post("/add-video-seed-collecting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_collecting_seed = $request->id_collecting_seed;
+        $keterangan_collecting_seed_video = $request->keterangan_collecting_seed_video;
+        $link_collecting_seed_video = $request->link_collecting_seed_video;
+        $file_collecting_seed_video = $request->file_collecting_seed_video;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $videoSeedCollecting = DB::insert("INSERT INTO yakopi_collecting_seed_video (id_collecting_seed_video,id_collecting_seed,keterangan_collecting_seed_video,link_collecting_seed_video,file_collecting_seed_video,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?)"
+        ,[null,$id_collecting_seed,$keterangan_collecting_seed_video,$link_collecting_seed_video,$file_collecting_seed_video,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil disimpan"
+        ];
+
+    });
+
+    Route::delete("/delete-video-seed-collecting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_collecting_seed_video = $request->id_collecting_seed_video;
+
+        $cekIdCollection = DB::select("SELECT * FROM yakopi_collecting_seed_video WHERE id_collecting_seed_video=?",[$id_collecting_seed_video]);
+
+        if(count($cekIdCollection)>0){
+            $id_collecting_seed = $cekIdCollection[0]->id_collecting_seed;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_collecting_seed WHERE id_collecting_seed=?",[$id_collecting_seed]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_collecting_seed_video WHERE id_collecting_seed_video=?",[$id_collecting_seed_video]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::post("/drone-seed-collecting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_collecting_seed = $request->id_collecting_seed;
+
+        $droneSeedCollecting = DB::select("SELECT * FROM yakopi_collecting_seed_drone WHERE id_collecting_seed_drone=?",[$id_collecting_seed]);
+        
+        return [
+            "success"=>true,
+            "data"=>$droneSeedCollecting
+        ];
+
+    });
+
+    Route::post("/add-drone-seed-collecting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_collecting_seed = $request->id_collecting_seed;
+        $keterangan_collecting_seed_drone = $request->keterangan_collecting_seed_drone;
+        $link_collecting_seed_drone = $request->link_collecting_seed_drone;
+        $file_collecting_seed_drone = $request->file_collecting_seed_drone;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $droneSeedCollecting = DB::insert("INSERT INTO yakopi_collecting_seed_drone (id_collecting_seed_drone,id_collecting_seed,keterangan_collecting_seed_drone,link_collecting_seed_drone,file_collecting_seed_drone,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?)"
+        ,[null,$id_collecting_seed,$keterangan_collecting_seed_drone,$link_collecting_seed_drone,$file_collecting_seed_drone,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil disimpan"
+        ];
+
+    });
+
+    Route::delete("/delete-drone-seed-collecting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_collecting_seed_drone = $request->id_collecting_seed_drone;
+
+        $cekIdCollection = DB::select("SELECT * FROM yakopi_collecting_seed_drone WHERE id_collecting_seed_drone=?",[$id_collecting_seed_drone]);
+
+        if(count($cekIdCollection)>0){
+            $id_collecting_seed = $cekIdCollection[0]->id_collecting_seed;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_collecting_seed WHERE id_collecting_seed=?",[$id_collecting_seed]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_collecting_seed_drone WHERE id_collecting_seed_drone=?",[$id_collecting_seed_drone]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::delete("/delete-collecting-seed", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_collecting_seed = $request->id_collecting_seed;
+
+        $cekIdCollection = DB::select("SELECT * FROM yakopi_collecting_seed WHERE id_collecting_seed=?",[$id_collecting_seed]);
+
+        if(count($cekIdCollection)>0){
+            $id_collecting_seed = $cekIdCollection[0]->id_collecting_seed;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_collecting_seed WHERE id_collecting_seed=?",[$id_collecting_seed]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_collecting_seed WHERE id_collecting_seed=?",[$id_collecting_seed]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
 
     // COMMUNITY DEVELOPMENT START
 
