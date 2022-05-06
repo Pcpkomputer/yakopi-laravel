@@ -444,7 +444,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         ];
     });
 
-    Route::get("/photo-land-assessment", function (Request $request){
+    Route::post("/photo-land-assessment", function (Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
@@ -458,7 +458,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         ];
     });
 
-    Route::get("/video-land-assessment", function (Request $request){
+    Route::post("/video-land-assessment", function (Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
@@ -472,7 +472,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         ];
     });
 
-    Route::get("/drone-land-assessment", function (Request $request){
+    Route::post("/drone-land-assessment", function (Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
