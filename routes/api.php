@@ -1206,19 +1206,22 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $nomor_mou = $request->nomor_mou;
         $nama_kelompok = $request->nama_kelompok;
         $ketua_kelompok = $request->ketua_kelompok;
-        $id_project = $request->id_project;
-        $id_provinces = $request->id_provinces;
-        $id_cities = $request->id_cities;
-        $id_districts = $request->id_districts;
-        $nama_desa = $request->nama_desa;
-        $nama_dusun = $request->nama_dusun;
+        $id_project = $request->project;
+        $id_provinces = $request->province;
+        $id_cities = $request->city;
+        $id_districts = $request->district;
+        $nama_desa = $request->village;
+        $nama_dusun = $request->backwood;
         $jumlah_site = $request->jumlah_site;
         $jumlah_plot = $request->jumlah_plot;
         $luas_area_mou = $request->luas_area_mou;
         $created_by = $json->id_pengguna;
         $created_time = date("Y-m-d H:i:s");
-    
-        $insertcommunity = DB::insert("INSERT INTO yakopi_community_register VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",[$nomor_mou,$nama_kelompok,$ketua_kelompok,$id_project,$id_provinces,$id_cities,$id_districts,$nama_desa,$nama_dusun,$jumlah_site,$jumlah_plot,$luas_area_mou,$created_by,$created_time]);
+        $status = "0";
+
+        $insertcommunity = DB::insert("INSERT INTO yakopi_community_register 
+        VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+        ,[$nomor_mou,$nama_kelompok,$ketua_kelompok,$id_project,$id_provinces,$id_cities,$id_districts,$nama_desa,$nama_dusun,$jumlah_site,$jumlah_plot,$luas_area_mou,$created_by,$created_time,$status]);
     
         return [
             "success"=>true,
@@ -1378,19 +1381,20 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
     
-        $id_project = $request->id_project;
-        $id_provinces = $request->id_provinces;
-        $id_cities = $request->id_cities;
-        $id_districts = $request->id_districts;
-        $nama_desa = $request->nama_desa;
-        $nama_dusun = $request->nama_dusun;
+        $id_project = $request->project;
+        $id_provinces = $request->province;
+        $id_cities = $request->city;
+        $id_districts = $request->district;
+        $nama_desa = $request->village;
+        $nama_dusun = $request->backwood;
         $kode_silvoshery = $request->kode_silvoshery;
         $pemilik_tambak = $request->pemilik_tambak;
         $jumlah_tanaman = $request->jumlah_tanaman;
         $created_by = $json->id_pengguna;
         $created_time = date("Y-m-d H:i:s");
+        $status = "0";
     
-        $insertsilvoshery = DB::insert("INSERT INTO yakopi_silvoshery VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?)",[$id_project,$id_provinces,$id_cities,$id_districts,$nama_desa,$nama_dusun,$kode_silvoshery,$pemilik_tambak,$jumlah_tanaman,$created_by,$created_time]);
+        $insertsilvoshery = DB::insert("INSERT INTO yakopi_silvoshery VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?)",[$id_project,$id_provinces,$id_cities,$id_districts,$nama_desa,$nama_dusun,$kode_silvoshery,$pemilik_tambak,$jumlah_tanaman,$created_by,$created_time,$status]);
         return [
             "success"=>true,
             "msg"=>"Berhasil melakukan pendaftaran"
