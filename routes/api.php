@@ -1225,6 +1225,113 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
             "msg"=>"Berhasil melakukan pendaftaran"
         ];
     });
+
+    Route::delete("/delete-community-register", function(Request $request, $id){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_community_register;
+
+        $cekIdCommunity = DB::select("SELECT * FROM yakopi_community_register WHERE id_community_register=?",[$id]);
+
+        if(count($cekIdCommunity)>0){
+            $id_community_register = $cekIdCommunity[0]->id_community_register;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_community_register WHERE id_community_register=?",[$id_community_register]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_community_register WHERE id_community_register=?",[$id_community_register]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::post("/approve-community-register", function(Request $request, $id){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_community_register;
+
+        $cekIdCommunity = DB::select("SELECT * FROM yakopi_community_register WHERE id_community_register=?",[$id]);
+
+        if(count($cekIdCommunity)>0){
+            $id_community_register = $cekIdCommunity[0]->id_community_register;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_community_register WHERE id_community_register=?",[$id_community_register]);
+
+            if($cekStatus[0]->status=="0"){
+
+                $update = DB::update("UPDATE yakopi_community_register SET status='1' WHERE id_community_register=?",[$id_community_register]);
+
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil diperbarui"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat diperbarui"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat diperbarui"
+            ];
+        }
+    });
+
+    Route::post("/reject-community-register/{id}", function(Request $request, $id){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_community_register;
+
+        $cekIdCommunity = DB::select("SELECT * FROM yakopi_community_register WHERE id_community_register=?",[$id]);
+
+        if(count($cekIdCommunity)>0){
+            $id_community_register = $cekIdCommunity[0]->id_community_register;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_community_register WHERE id_community_register=?",[$id_community_register]);
+
+            if($cekStatus[0]->status=="0"){
+
+                $update = DB::update("UPDATE yakopi_community_register SET status='2' WHERE id_community_register=?",[$id_community_register]);
+
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil diperbarui"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat diperbarui"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat diperbarui"
+            ];
+        }
+
+    });
     
     Route::get("/silvoshery", function(Request $request){
         $token = $request->bearerToken();
