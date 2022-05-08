@@ -1226,7 +1226,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         ];
     });
 
-    Route::delete("/delete-community-register", function(Request $request, $id){
+    Route::delete("/delete-community-register", function(Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
@@ -1260,7 +1260,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         }
     });
 
-    Route::post("/approve-community-register", function(Request $request, $id){
+    Route::post("/approve-community-register", function(Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
@@ -1296,7 +1296,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         }
     });
 
-    Route::post("/reject-community-register/{id}", function(Request $request, $id){
+    Route::post("/reject-community-register", function(Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
@@ -1396,4 +1396,118 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
             "msg"=>"Berhasil melakukan pendaftaran"
         ];
     });
+
+    Route::delete("/delete-silvoshery", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_silvoshery;
+
+        $cekIdSilvoshery = DB::select("SELECT * FROM yakopi_silvoshery WHERE id_silvoshery=?",[$id]);
+
+        if(count($cekIdSilvoshery)>0){
+            $id_silvoshery = $cekIdSilvoshery[0]->id_silvoshery;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_silvoshery WHERE id_silvoshery=?",[$id_silvoshery]);
+
+            if($cekStatus[0]->status=="0"){
+                
+                $delete = DB::delete("DELETE FROM yakopi_silvoshery WHERE id_silvoshery=?",[$id_silvoshery]);
+
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+
+    });
+
+    Route::post("/approve-silvoshery", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_silvoshery;
+
+        $cekIdSilvoshery = DB::select("SELECT * FROM yakopi_silvoshery WHERE id_silvoshery=?",[$id]);
+
+        if(count($cekIdSilvoshery)>0){
+            $id_silvoshery = $cekIdSilvoshery[0]->id_silvoshery;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_silvoshery WHERE id_silvoshery=?",[$id_silvoshery]);
+
+            if($cekStatus[0]->status=="0"){
+
+                $update = DB::update("UPDATE yakopi_silvoshery SET status='1' WHERE id_silvoshery=?",[$id_silvoshery]);
+
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil diperbarui"
+                ];
+
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat diperbarui"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat diperbarui"
+            ];
+        }
+
+    });
+
+    Route::post("/reject-silvoshery", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_silvoshery;
+
+        $cekIdSilvoshery = DB::select("SELECT * FROM yakopi_silvoshery WHERE id_silvoshery=?",[$id]);
+
+        if(count($cekIdSilvoshery)>0){
+            $id_silvoshery = $cekIdSilvoshery[0]->id_silvoshery;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_silvoshery WHERE id_silvoshery=?",[$id_silvoshery]);
+
+            if($cekStatus[0]->status=="0"){
+
+                $update = DB::update("UPDATE yakopi_silvoshery SET status='2' WHERE id_silvoshery=?",[$id_silvoshery]);
+
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil diperbarui"
+                ];
+
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat diperbarui"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat diperbarui"
+            ];
+        }
+    });
+
 });
