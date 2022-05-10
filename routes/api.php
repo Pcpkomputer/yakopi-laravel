@@ -774,10 +774,10 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $id_provinces = $request->province;
         $id_cities = $request->city;
         $id_districts = $request->district;
-        $lat_collecting_seed = $request->lat_collecting_seed;
-        $long_collecting_seed = $request->long_collecting_seed;
-        $nama_desa = $request->nama_desa;
-        $nama_dusun = $request->nama_dusun;
+        $lat_collecting_seed = $request->coordinate["latitude"];
+        $long_collecting_seed = $request->coordinate["longitude"];
+        $nama_desa = $request->village;
+        $nama_dusun = $request->backwood;
         $trasportasi_1 = $request->trasportasi_1;
         $trasportasi_2 = $request->trasportasi_2;
         $catatan_1 = $request->catatan_1;
@@ -983,7 +983,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
         $id_collecting_seed = $request->id_collecting_seed;
 
-        $videoSeedCollecting = DB::select("SELECT * FROM yakopi_collecting_seed_video WHERE id_collecting_seed_video=?",[$id_collecting_seed]);
+        $videoSeedCollecting = DB::select("SELECT * FROM yakopi_collecting_seed_video WHERE id_collecting_seed=?",[$id_collecting_seed]);
 
         return [
             "success"=>true,
@@ -1055,7 +1055,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
         $id_collecting_seed = $request->id_collecting_seed;
 
-        $droneSeedCollecting = DB::select("SELECT * FROM yakopi_collecting_seed_drone WHERE id_collecting_seed_drone=?",[$id_collecting_seed]);
+        $droneSeedCollecting = DB::select("SELECT * FROM yakopi_collecting_seed_drone WHERE id_collecting_seed=?",[$id_collecting_seed]);
         
         return [
             "success"=>true,
@@ -1154,6 +1154,469 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
             ];
         }
     });
+
+    // SEED COLLECTING END
+
+    // NURSERY ACTIVITY START
+
+    Route::get("/nursery-activity", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $nurseryActivity = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_nursery_activity AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        ");
+
+        return [
+            "success"=>true,
+            "data"=>$nurseryActivity
+        ];
+
+    });
+
+    Route::get("/nursery-activity/{id_nursery_activity}", function (Request $request,$id_nursery_activity){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $nurseryActivity = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_nursery_activity AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        WHERE la.id_nursery_activity=?
+        ",[$id_nursery_activity]);
+
+        return [
+            "success"=>true,
+            "data"=>$nurseryActivity
+        ];
+
+    });
+
+    Route::get("/history-nursery-activity/{id_pengguna}", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $nurseryActivity = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_nursery_activity AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        WHERE la.created_by=?
+        ",[$json->id_pengguna]);
+
+        return [
+            "success"=>true,
+            "data"=>$nurseryActivity
+        ];
+    });
+
+    Route::post("/nursery-activity", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_project = $request->project;
+        $id_provinces = $request->province;
+        $id_cities = $request->city;
+        $id_districts = $request->district;
+        $nama_desa = $request->village;
+        $nama_dusun = $request->backwood;
+        $lat_nursery_activity = $request->latitude;
+        $long_nursery_activity = $request->longitude;
+        $catatan_1 = $request->catatan_1;
+        $catatan_2 = $request->catatan_2;
+        $dilaporkan_oleh = $request->dilaporkan_oleh;
+        $ttd_pelapor = "";
+        $created_by = $json->id_pengguna;  
+        $created_time = date("Y-m-d H:i:s");
+        $status = 0;
+
+        $nurseryActivity = DB::insert(' INSERT INTO yakopi_nursery_activity (id_project,id_provinces,id_cities,id_districts,lat_nursery_activity,long_nursery_activity,nama_desa,nama_dusun,catatan_1,catatan_2,dilaporkan_oleh,ttd_pelapor,created_by,created_time,status) 
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)'
+        ,[$id_project,$id_provinces,$id_cities,$id_districts,$lat_nursery_activity,$long_nursery_activity,$nama_desa,$nama_dusun,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time,$status]);
+    
+        if($nurseryActivity){
+            return [
+                "success"=>true,
+                "msg"=>"Data berhasil ditambahkan"
+            ];
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat ditambahkan"
+            ];
+        }
+    });
+
+    Route::post("/approve-nursery-activity", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_nursery_activity = $request->id_nursery_activity;
+        $status = 1;
+
+        $approveSeedCollecting = DB::update("UPDATE yakopi_nursery_activity SET status=? WHERE id_nursery_activity=?",[$status,$id_nursery_activity]);
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil Mengkonfirmasi Data"
+        ];
+    });
+
+    Route::post("/reject-nursery-activity", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_nursery_activity = $request->id_nursery_activity;
+        $status = 2;
+
+        $rejectSeedCollecting = DB::update("UPDATE yakopi_nursery_activity SET status=? WHERE id_nursery_activity=?",[$status,$id_nursery_activity]);
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil Menolak Data"
+        ];
+    });
+
+    Route::post("/kind-nursery-activity", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_nursery_activity = $request->id_nursery_activity;
+
+        $kind_nursery_activity = DB::select("SELECT * FROM yakopi_detail_nursery_activity WHERE id_nursery_activity=?",[$id_nursery_activity]);
+
+        return [
+            "success"=>true,
+            "data"=>$kind_nursery_activity
+        ];
+    });
+
+    Route::post("/add-kind-nursery-activity", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_nursery_activity = $request->id_nursery_activity;
+        $tanggal_collecting = $request->tanggal_collecting;
+        $jumlah_pekerja = $request->jumlah_pekerja;
+        $r_mucronoto = $request->r_mucronoto;
+        $r_styloso = $request->r_styloso;
+        $r_apiculata = $request->r_apiculata;
+        $avicennia_spp = $request->avicennia_spp;
+        $ceriops_spp = $request->ceriops_spp;
+        $xylocarpus_spp = $request->xylocarpus_spp;
+        $bruguiera_spp = $request->bruguiera_spp;
+        $sonneratia_spp = $request->sonneratia_spp;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $kindSeedCollecting = DB::insert("INSERT INTO yakopi_detail_nursery_activity (id_detail_nursery_activity,id_nursery_activity,tanggal_collecting,jumlah_pekerja,r_mucronoto,r_styloso,r_apiculata,avicennia_spp,ceriops_spp,xylocarpus_spp,bruguiera_spp,sonneratia_spp,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+        ,[null,$id_nursery_activity,$tanggal_collecting,$jumlah_pekerja,$r_mucronoto,$r_styloso,$r_apiculata,$avicennia_spp,$ceriops_spp,$xylocarpus_spp,$bruguiera_spp,$sonneratia_spp,$created_by,$created_time]);
+        
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil disimpan"
+        ];
+    });
+
+    Route::delete("/delete-kind-nursery-activity", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_detail_nursery_activity = $request->id_detail_nursery_activity;
+        
+        $cekId = DB::select("SELECT * FROM yakopi_detail_nursery_activity WHERE id_detail_nursery_activity=?",[$id_detail_nursery_activity]);
+        if(count($cekId)>0){
+            $id_nursery_activity = $cekId[0]->id_nursery_activity;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_nursery_activity WHERE id_nursery_activity=?",[$id_nursery_activity]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_detail_nursery_activity WHERE id_detail_nursery_activity=?",[$id_detail_nursery_activity]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::post("/photo-nursery-activity", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_nursery_activity;
+
+        $photo = DB::select("SELECT * FROM yakopi_nursery_activity_photo WHERE id_nursery_activity=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$photo
+        ];
+    });
+
+    Route::post("/add-photo-nursery-activity", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_nursery_activity;
+        $keterangan = $request->keterangan_nursery_activity_photo;
+        $link = $request->link_nursery_activity_photo;
+        $file = $request->file_nursery_activity_photo;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $photo = DB::insert("INSERT INTO yakopi_nursery_activity_photo (id_nursery_activity_photo,id_nursery_activity,keterangan,link,file,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?)"
+        ,[null,$id,$keterangan,$link,$file,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil disimpan"
+        ];
+
+    });
+
+    Route::delete("/delete-photo-nursery-activity", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_nursery_activity_photo;
+
+        $cekId = DB::select("SELECT * FROM yakopi_nursery_activity_photo WHERE id_nursery_activity_photo=?",[$id]);
+
+        if(count($cekId)>0){
+            $id1 = $cekId[0]->id_nursery_activity;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_nursery_activity WHERE id_nursery_activity=?",[$id1]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_nursery_activity_photo WHERE id_nursery_activity_photo=?",[$ic]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::post("/video-nursery-activity", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_nursery_activity;
+
+        $video = DB::select("SELECT * FROM yakopi_nursery_activity_video WHERE id_nursery_activity=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$video
+        ];
+    });
+
+    Route::post("/add-video-nursery-activity", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_nursery_activity;
+        $keterangan = $request->keterangan_nursery_activity_video;
+        $link = $request->link_nursery_activity_video;
+        $file = $request->file_nursery_activity_video;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $video = DB::insert("INSERT INTO yakopi_nursery_activity_video (id_nursery_activity_video,id_nursery_activity,keterangan,link,file,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?)"
+        ,[null,$id,$keterangan,$link,$file,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil disimpan"
+        ];
+
+    });
+
+    Route::delete("/delete-video-nursery-activity", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_nursery_activity_video;
+
+        $cekId = DB::select("SELECT * FROM yakopi_nursery_activity_video WHERE id_nursery_activity_video=?",[$id_nursery_activity_video]);
+
+        if(count($cekId)>0){
+            $id1 = $cekId[0]->id_nursery_activity;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_nursery_activity WHERE id_nursery_activity=?",[$id1]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_nursery_activity_video WHERE id_nursery_activity_video=?",[$id]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::post("/drone-nursery-activity", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_nursery_activity;
+
+        $drone = DB::select("SELECT * FROM yakopi_nursery_activity_drone WHERE id_nursery_activity=?",[$id]);
+        
+        return [
+            "success"=>true,
+            "data"=>$drone
+        ];
+
+    });
+
+    Route::post("/add-drone-nursery-activity", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_nursery_activity;
+        $keterangan = $request->keterangan_nursery_activity_drone;
+        $link = $request->link_nursery_activity_drone;
+        $file = $request->file_nursery_activity_drone;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $drone = DB::insert("INSERT INTO yakopi_nursery_activity_drone (id_nursery_activity_drone,id_nursery_activity,keterangan,link,file,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?)"
+        ,[null,$id,$keterangan,$link,$file,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil disimpan"
+        ];
+
+    });
+
+    Route::delete("/delete-drone-nursery-activity", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_nursery_activity_drone;
+
+        $cekId = DB::select("SELECT * FROM yakopi_nursery_activity_drone WHERE id_nursery_activity=?",[$id]);
+
+        if(count($cekId)>0){
+            $id1 = $cekId[0]->id_nursery_activity;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_nursery_activity WHERE id_nursery_activity=?",[$id1]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_nursery_activity_drone WHERE id_nursery_activity_drone=?",[$id]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::delete("/delete-nursery-activity", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_nursery_activity;
+
+        $cekId = DB::select("SELECT * FROM yakopi_nursery_activity WHERE id_nursery_activity=?",[$id_collecting_seed]);
+
+        if(count($cekId)>0){
+            $id1 = $cekId[0]->id_nursery_activity;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_nursery_activity WHERE id_nursery_activity=?",[$id1]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_nursery_activity WHERE id_nursery_activity=?",[$id1]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+        
 
 
     // COMMUNITY DEVELOPMENT START
