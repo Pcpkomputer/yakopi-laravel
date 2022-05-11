@@ -1193,9 +1193,13 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         WHERE la.id_nursery_activity=?
         ",[$id_nursery_activity]);
 
+        $detail_nursery_activity = DB::select("
+        SELECT * FROM yakopi_detail_nursery_activity WHERE id_nursery_activity=?",[$id_nursery_activity]);
+
         return [
             "success"=>true,
-            "data"=>$nurseryActivity
+            "data"=>$nurseryActivity,
+            "detail_nursery_activity"=>$detail_nursery_activity
         ];
 
     });
