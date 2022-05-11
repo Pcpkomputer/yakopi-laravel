@@ -778,10 +778,10 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $long_collecting_seed = $request->coordinate["longitude"];
         $nama_desa = $request->village;
         $nama_dusun = $request->backwood;
-        $trasportasi_1 = $request->trasportasi_1;
-        $trasportasi_2 = $request->trasportasi_2;
-        $catatan_1 = $request->catatan_1;
-        $catatan_2 = $request->catatan_2;
+        $trasportasi_1 = $request->transportation_used_1;
+        $trasportasi_2 = $request->transportation_used_2;
+        $catatan_1 = $request->important_information_from_group_members;
+        $catatan_2 = $request->other_important_information_from_group_members;
         $dilaporkan_oleh = $request->dilaporkan_oleh;
         $ttd_pelapor = '';
         $created_by = $json->id_pengguna;
