@@ -1981,4 +1981,280 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         }
     });
 
+    // COMMUNITY DEVELOPMENT END
+
+    // RESEARCH START
+
+    // GROWTH RESEARCH START
+
+    Route::get("/research/growthResearch", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+        
+        $data = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_growth_research AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        ");
+
+        return [
+            "success"=>true,
+            "data"=>$data
+        ];
+    });
+
+    Route::get("/research/growthResearch/{id}", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id;
+
+        $data = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_growth_research AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        WHERE la.id_growth_research=?",[$id]);
+
+        $detail = DB::select("SELECT * FROM yakopi_detail_growth_research WHERE id_growth_research=?",[$data[0]->id_growth_research]);
+
+        return [
+            "success"=>true,
+            "data"=>$data,
+            "detail"=>$detail
+        ];
+
+    });
+
+    Route::post("/research/growthResearch/add", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_project = $request->project;
+        $id_provinces = $request->province;
+        $id_cities = $request->city;
+        $id_districts = $request->district;
+        $lat_growth_research = $request->coordinate["latitude"];
+        $long_growth_research = $request->coordinate["longitude"];
+        $nama_desa = $request->village;
+        $nama_dusun = $request->backwood;
+        $site_code = $request->site_code;
+        $plot_code = $request->plot_code;
+        $area = $request->area;
+        $spesies = $request->species;
+        $jumlah = $request->jumlah;
+        $monitoring_ke = $request->monitoring_ke;
+        $catatan_1 = $request->catatan_1;
+        $catatan_2 = $request->catatan_2;
+        $dilaporkan_oleh = $request->dilaporkan_oleh;
+        $ttd_pelapor = '';
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+        $status = "0";
+
+        $insert = DB::insert(" INSERT INTO yakopi_growth_research 
+        (id_growth_research,id_project,id_provinces,id_cities,id_districts,lat_growth_research,long_growth_research,nama_desa,nama_dusun,site_code,plot_code,area,spesies,jumlah,monitoring_ke,catatan_1,catatan_2,dilaporkan_oleh,ttd_pelapor,created_by,created_time,status) 
+        VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+        ,[$id_project,$id_provinces,$id_cities,$id_districts,$lat_growth_research,$long_growth_research,$nama_desa,$nama_dusun,$site_code,$plot_code,$area,$spesies,$jumlah,$monitoring_ke,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time,$status]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil ditambahkan"
+        ];
+
+    });
+
+    Route::delete("/research/growthResearch/delete/{id}", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id;
+
+        $data = DB::select("SELECT * FROM yakopi_growth_research WHERE id_growth_research=?",[$id]);
+        
+        if($data[0]->status=="0"){
+            $delete = DB::delete("DELETE FROM yakopi_growth_research WHERE id_growth_research=?",[$id]);
+
+            if($delete){
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+
+    });
+
+    Route::get("/research/dataGrowthResearch/{id}", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id;
+
+        $data = DB::select(" SELECT * FROM yakopi_detail_growth_research WHERE id_growth_research=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$data
+        ];
+
+    });
+
+    Route::post("/research/growthResearch/addDetail", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_growth_research = $request->id_growth_research;
+        $no_tagging = $request->no_tagging;
+        $tinggi = $request->tinggi;
+        $diameter = $request->diameter;
+        $jumlah_daun = $request->jumlah_daun;
+        $jumlah_percabangan = $request->jumlah_percabangan;
+        $keterangan = $request->keterangan;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $insert = DB::insert(" INSERT INTO yakopi_detail_growth_research
+        (id_detail_growth_research,id_growth_research,no_tagging,tinggi,diameter,jumlah_daun,jumlah_percabangan,keterangan,created_by,created_time)
+        VALUES (null,?,?,?,?,?,?,?,?,?,?)"
+        ,[$id_growth_research,$no_tagging,$tinggi,$diameter,$jumlah_daun,$jumlah_percabangan,$keterangan,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil ditambahkan"
+        ];
+    });
+
+    Route::delete("/research/growthResearch/deleteDetail/{id}", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id;
+
+        $cek = DB::select("SELECT * FROM yakopi_detail_growth_research WHERE id_detail_growth_research=?",[$id]);
+
+        if(count($cek)>0){
+            $cekStatus = DB::select("SELECT * FROM yakopi_growth_research WHERE id_growth_research=?",[$cek[0]->id_growth_research]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_detail_growth_research WHERE id_detail_growth_research=?",[$id]);
+
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus karena sudah dilaporkan"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak ditemukan"
+            ];
+        }
+    });
+
+    Route::get("/research/photoDataGrowthResearch/{id}", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id;
+
+        $data = DB::select("SELECT * FROM yakopi_photo_growth_research WHERE id_detail_growth_research=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$data
+        ];
+
+    });
+
+    Route::post("/research/growthResearch/addPhoto", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_detail_growth_research = $request->id_detail_growth_research;
+        $link_growth_research_photo = $request->link_growth_research_photo;
+        $file_growth_research_photo = $request->file_growth_research_photo;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $insert = DB::insert(" INSERT INTO yakopi_growth_research_photo 
+        (id_growth_research_photo,id_detail_growth_research,link_growth_research_photo,file_growth_research_photo,created_by,created_time)
+        VALUES (null,?,?,?,?,?,?)"
+        ,[$id_detail_growth_research,$link_growth_research_photo,$file_growth_research_photo,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil ditambahkan"
+        ];
+
+    });
+
+    Route::delete("/research/growthResearch/deletePhoto/{id}", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id;
+
+        $cek = DB::select("SELECT * FROM yakopi_growth_research_photo WHERE id_growth_research_photo=?",[$id]);
+
+        if(count($cek)>0){
+            $cekDetail = DB::select("SELECT * FROM yakopi_detail_growth_research WHERE id_detail_growth_research=?",[$cek[0]->id_detail_growth_research]);
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_growth_research WHERE id_growth_research=?",[$cekDetail[0]->id_growth_research]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_growth_research_photo WHERE id_growth_research_photo=?",[$id]);
+
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus karena sudah dilaporkan"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak ditemukan"
+            ];
+        }
+    });
+
+    // GROWTH RESEARCH END
+
+
+
+
+
 });
