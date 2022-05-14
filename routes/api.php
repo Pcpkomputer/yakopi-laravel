@@ -222,7 +222,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $latitude = $request->latitude;
         $longitude = $request->longitude;
 
-        $updatepresensi = DB::insert("UPDATE yakopi_absen SET jam_keluar_absen=?,foto_absen_keluar=?, lat_absen_keluar=?, long_absen_keluar=? WHERE id_pengguna=? AND tgl_absen=CURDATE()",[$timezone,$filename,$latitude,$longitude,$json->id_pengguna]);
+        $updatepresensi = DB::insert("UPDATE yakopi_absen SET jam_keluar_absen=?,foto_absen_keluar=?, lat_absen_keluar=?, long_absen_keluar=? WHERE id_pengguna=? AND tgl_absen=CURDATE()",[$timezone,"assets/img/absenKeluar/".$filename,$latitude,$longitude,$json->id_pengguna]);
     
         return [
             "success"=>true,
@@ -244,7 +244,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $checkexist = DB::select("SELECT * FROM yakopi_absen WHERE tgl_absen=CURDATE() AND id_pengguna=?",[$json->id_pengguna]);
         
         if(count($checkexist)==0){
-            $insertpresensimasuk = DB::insert("INSERT INTO yakopi_absen VALUES (NULL,?,NOW(),?,NULL,?,NULL,?,?,NULL,NULL)",[$json->id_pengguna,$timezone,"assets/absenMasuk/".$filename,$latitude,$longitude]);
+            $insertpresensimasuk = DB::insert("INSERT INTO yakopi_absen VALUES (NULL,?,NOW(),?,NULL,?,NULL,?,?,NULL,NULL)",[$json->id_pengguna,$timezone,"assets/img/absenMasuk/".$filename,$latitude,$longitude]);
     
             return [
                 "success"=>true,
