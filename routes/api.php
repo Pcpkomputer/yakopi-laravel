@@ -1620,6 +1620,147 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         }
     });
 
+    // NURSERY ACTIVITY END
+
+    // PLANTING ACTION START
+
+    Route::get("/planting-action", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_planting_action;
+
+        $planting = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_planting_action AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        ");
+
+        return [
+            "success"=>true,
+            "data"=>$planting
+        ];
+
+    });
+
+    Route::get("/planting-action/{id_planting_action}", function (Request $request,$id_planting_action){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $plantingAction = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_planting_action AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        WHERE la.id_planting_action=?
+        ",[$id_planting_action]);
+
+        $detailPlantingAction = DB::select("
+        SELECT * FROM yakopi_detail_planting_action WHERE id_planting_action=?",[$id_planting_action]);
+
+        return [
+            "success"=>true,
+            "data"=>$plantingAction,
+            "detail_planting_action"=>$detailPlantingAction
+        ];
+
+    });
+
+    Route::get("/history-planting-action/{id_pengguna}", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $plantingAction = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_planting_action AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        WHERE la.created_by=?
+        ",[$json->id_pengguna]);
+
+        return [
+            "success"=>true,
+            "data"=>$plantingAction
+        ];
+    });
+
+    Route::post("/planting-action", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_project = $request->project;
+        $id_provinces = $request->province;
+        $id_cities = $request->city;
+        $id_districts = $request->district;
+        $nama_desa = $request->village;
+        $nama_dusun = $request->backwood;
+        $jarak_tanam = $request->jarak_tanam;
+        $lokasi_tanam = $request->lokasi_tanam;
+        $info_1 = $request->info_1;
+        $transportation = $request->transportation;
+        $catatan_1 = $request->catatan_1;
+        $catatan_2 = $request->catatan_2;
+        $dilaporkan_oleh = $request->dilaporkan_oleh;
+        $ttd_pelapor = "";
+        $created_by = $json->id_pengguna;  
+        $created_time = date("Y-m-d H:i:s");
+        $status = 0;
+
+        $plantingAction = DB::insert(" INSERT INTO yakopi_planting_action (id_planting_action,id_project,id_provinces,id_cities,id_districts,nama_desa,nama_dusun,jarak_tanam,lokasi_tanam,info_1,transportation,catatan_1,catatan_2,dilaporkan_oleh,ttd_pelapor,created_by,created_time,status)
+        VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        ",[$id_project,$id_provinces,$id_cities,$id_districts,$nama_desa,$nama_dusun,$jarak_tanam,$lokasi_tanam,$info_1,$transportation,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time,$status]);
+        if($plantingAction){
+            return [
+                "success"=>true,
+                "msg"=>"Data berhasil ditambahkan"
+            ];
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat ditambahkan"
+            ];
+        }
+    });
+
+    Route::post("/approve-planting-action", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_planting_action = $request->id_planting_action;
+        $status = 1;
+
+        $approvePlantingAction = DB::update("UPDATE yakopi_planting_action SET status=? WHERE id_planting_action=?",[$status,$id_planting_action]);
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil Mengkonfirmasi Data"
+        ];
+    });
+
+    Route::post("/reject-planting-action", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_planting_action = $request->id_planting_action;
+        $status = 2;
+
+        $rejectPlantingAction = DB::update("UPDATE yakopi_planting_action SET status=? WHERE id_planting_action=?",[$status,$id_planting_action]);
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil Menolak Data"
+        ];
+    });
+    
+
         
 
 
