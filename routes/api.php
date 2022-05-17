@@ -1236,7 +1236,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $nama_desa = $request->village;
         $nama_dusun = $request->backwood;
         $lat_nursery_activity = $request->coordinate["latitude"];
-        $long_nursery_activity = $request->coordinate["longtitude"];
+        $long_nursery_activity = $request->coordinate["longitude"];
         $catatan_1 = $request->catatan_1;
         $catatan_2 = $request->catatan_2;
         $dilaporkan_oleh = $request->dilaporkan_oleh;
@@ -1396,7 +1396,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $created_by = $json->id_pengguna;
         $created_time = date("Y-m-d H:i:s");
 
-        $photo = DB::insert("INSERT INTO yakopi_nursery_activity_photo (id_nursery_activity_photo,id_nursery_activity,keterangan,link,file,created_by,created_time)
+        $photo = DB::insert("INSERT INTO yakopi_nursery_activity_photo (id_nursery_activity_photo,id_nursery_activity,keterangan_nursery_activity_photo,link_nursery_activity_photo,file_nursery_activity_photo,created_by,created_time)
         VALUES (?,?,?,?,?,?,?)"
         ,[null,$id,$keterangan,$link,$file,$created_by,$created_time]);
 
@@ -1468,7 +1468,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $created_by = $json->id_pengguna;
         $created_time = date("Y-m-d H:i:s");
 
-        $video = DB::insert("INSERT INTO yakopi_nursery_activity_video (id_nursery_activity_video,id_nursery_activity,keterangan,link,file,created_by,created_time)
+        $video = DB::insert("INSERT INTO yakopi_nursery_activity_video (id_nursery_activity_video,id_nursery_activity,keterangan_nursery_activity_video,link_nursery_activity_video,file_nursery_activity_video,created_by,created_time)
         VALUES (?,?,?,?,?,?,?)"
         ,[null,$id,$keterangan,$link,$file,$created_by,$created_time]);
 
@@ -1541,7 +1541,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $created_by = $json->id_pengguna;
         $created_time = date("Y-m-d H:i:s");
 
-        $drone = DB::insert("INSERT INTO yakopi_nursery_activity_drone (id_nursery_activity_drone,id_nursery_activity,keterangan,link,file,created_by,created_time)
+        $drone = DB::insert("INSERT INTO yakopi_nursery_activity_drone (id_nursery_activity_drone,id_nursery_activity,keterangan_nursery_activity_drone,link_nursery_activity_drone,file_nursery_activity_drone,created_by,created_time)
         VALUES (?,?,?,?,?,?,?)"
         ,[null,$id,$keterangan,$link,$file,$created_by,$created_time]);
 
@@ -1593,7 +1593,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
         $id = $request->id_nursery_activity;
 
-        $cekId = DB::select("SELECT * FROM yakopi_nursery_activity WHERE id_nursery_activity=?",[$id_collecting_seed]);
+        $cekId = DB::select("SELECT * FROM yakopi_nursery_activity WHERE id_nursery_activity=?",[$id]);
 
         if(count($cekId)>0){
             $id1 = $cekId[0]->id_nursery_activity;
