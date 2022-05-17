@@ -1235,8 +1235,8 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $id_districts = $request->district;
         $nama_desa = $request->village;
         $nama_dusun = $request->backwood;
-        $lat_nursery_activity = $request->latitude;
-        $long_nursery_activity = $request->longitude;
+        $lat_nursery_activity = $request->coordinate["latitude"];
+        $long_nursery_activity = $request->coordinate["longtitude"];
         $catatan_1 = $request->catatan_1;
         $catatan_2 = $request->catatan_2;
         $dilaporkan_oleh = $request->dilaporkan_oleh;
