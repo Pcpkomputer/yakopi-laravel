@@ -20,6 +20,16 @@ Route::get("/", function(Request $requset){
     return "YAKOPI API LARAVEL v1.0";
 });
 
+// INFORMATION API START
+
+Route::get("/mobilebuildnumber", function(Request $request){
+    $version = DB::select("SELECT buildnumber,changelog_mobile FROM yakopi_identitas WHERE id_profile=1");
+    return [
+        "buildnumber"=>$version[0]->buildnumber,
+        "changelog_mobile"=>$version[0]->changelog_mobile
+    ];
+});
+
 Route::post("/auth", function (Request $request){
 
     $username = $request->email;
@@ -68,16 +78,6 @@ Route::post("/auth", function (Request $request){
 Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
     //GENERAL API START
-
-    // INFORMATION API START
-
-    Route::get("/mobilebuildnumber", function(Request $request){
-        $version = DB::select("SELECT buildnumber,changelog_mobile FROM yakopi_identitas WHERE id_profile=1");
-        return [
-            "buildnumber"=>$version[0]->buildnumber,
-            "changelog_mobile"=>$version[0]->changelog_mobile
-        ];
-    });
 
     // LOCATION API START
 
@@ -1422,7 +1422,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
             $cekStatus = DB::select("SELECT * FROM yakopi_nursery_activity WHERE id_nursery_activity=?",[$id1]);
 
             if($cekStatus[0]->status=="0"){
-                $delete = DB::delete("DELETE FROM yakopi_nursery_activity_photo WHERE id_nursery_activity_photo=?",[$ic]);
+                $delete = DB::delete("DELETE FROM yakopi_nursery_activity_photo WHERE id_nursery_activity_photo=?",[$id]);
                 return [
                     "success"=>true,
                     "msg"=>"Data berhasil dihapus"
@@ -1486,7 +1486,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
         $id = $request->id_nursery_activity_video;
 
-        $cekId = DB::select("SELECT * FROM yakopi_nursery_activity_video WHERE id_nursery_activity_video=?",[$id_nursery_activity_video]);
+        $cekId = DB::select("SELECT * FROM yakopi_nursery_activity_video WHERE id_nursery_activity_video=?",[$id]);
 
         if(count($cekId)>0){
             $id1 = $cekId[0]->id_nursery_activity;
@@ -1559,7 +1559,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
         $id = $request->id_nursery_activity_drone;
 
-        $cekId = DB::select("SELECT * FROM yakopi_nursery_activity_drone WHERE id_nursery_activity=?",[$id]);
+        $cekId = DB::select("SELECT * FROM yakopi_nursery_activity_drone WHERE id_nursery_activity_drone=?",[$id]);
 
         if(count($cekId)>0){
             $id1 = $cekId[0]->id_nursery_activity;
