@@ -1783,7 +1783,6 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $id_planting_action = $request->id_planting_action;
         $date_planting_action = $request->date_planting_action;
         $jumlah_pekerja = $request->jumlah_pekerja;
-        $jumlah_pekerja = $request->jumlah_pekerja;
         $kode_site = $request->kode_site;
         $kode_plot = $request->kode_plot;
         $lat_detail_planting_action = $request->coordinate["latitude"];
@@ -1802,7 +1801,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $created_time = date("Y-m-d H:i:s");
 
         $kindPlantingAction = DB::insert(" INSERT INTO yakopi_detail_planting_action (id_detail_planting_action,id_planting_action,date_planting_action,jumlah_pekerja,kode_site,kode_plot,lat_detail_planting_action,long_detail_planting_action,sistem_tanam_1,sistem_tanam_2,r_mucronota,r_stylosa,r_apiculata,avicennia_spp,ceriops_spp,xylocarpus_spp,bruguiera_spp,sonneratia_spp,created_by,created_time)
-        VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         ",[$id_planting_action,$date_planting_action,$jumlah_pekerja,$kode_site,$kode_plot,$lat_detail_planting_action,$long_detail_planting_action,$sistem_tanam_1,$sistem_tanam_2,$r_mucronota,$r_stylosa,$r_apiculata,$avicennia_spp,$ceriops_spp,$xylocarpus_spp,$bruguiera_spp,$sonneratia_spp,$created_by,$created_time]);
         if($kindPlantingAction){
             return [
@@ -1828,10 +1827,10 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         if(count($cekId)>0){
             $id_planting_action = $cekId[0]->id_planting_action;
 
-            $cekStatus = DB::select("SELECT * FROM yakopi_nursery_activity WHERE id_planting_action=?",[$id_planting_action]);
+            $cekStatus = DB::select("SELECT * FROM yakopi_planting_action WHERE id_planting_action=?",[$id_planting_action]);
 
             if($cekStatus[0]->status=="0"){
-                $delete = DB::delete("DELETE FROM yakopi_detail_planting_action WHERE id_detail_nursery_activity=?",[$id_detail_nursery_activity]);
+                $delete = DB::delete("DELETE FROM yakopi_detail_planting_action WHERE id_detail_planting_action=?",[$id_detail_planting_action]);
                 return [
                     "success"=>true,
                     "msg"=>"Data berhasil dihapus"
@@ -2112,7 +2111,473 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
             ];
         }
     });
+
+    // PLANTING ACTION END
+
+    // TRANSPORT START
     
+    Route::get("/transport", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $transport = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_transport AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        ");
+
+        return [
+            "success"=>true,
+            "data"=>$transport
+        ];
+
+    });
+
+    Route::get("/transport/{id_transport}", function (Request $request,$id_transport){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $transport = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_transport AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        WHERE la.id_transport=?
+        ",[$id_transport]);
+
+        $detail_transport = DB::select("
+        SELECT * FROM yakopi_detail_transport WHERE id_transport=?",[$id_transport]);
+
+        return [
+            "success"=>true,
+            "data"=>$transport,
+            "detail_transport"=>$detail_transport
+        ];
+
+    });
+
+    Route::get("/history-transport/{id_pengguna}", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $transport = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_transport AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        WHERE la.created_by=?
+        ",[$json->id_pengguna]);
+
+        return [
+            "success"=>true,
+            "data"=>$transport
+        ];
+    });
+
+    Route::post("/transport", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_project = $request->project;
+        $id_provinces = $request->province;
+        $id_cities = $request->city;
+        $id_districts = $request->district;
+        $nama_desa = $request->village;
+        $nama_dusun = $request->backwood;
+        $lat_transport = $request->coordinate["latitude"];
+        $long_transport = $request->coordinate["longitude"];
+        $transport_info = $request->transport_info;
+        $daerah_tujuan = $request->daerah_tujuan;
+        $kecamatan = $request->kecamatan;
+        $desa = $request->desa;
+        $dusun = $request->dusun;
+        $catatan_1 = $request->catatan_1;
+        $catatan_2 = $request->catatan_2;
+        $dilaporkan_oleh = $request->dilaporkan_oleh;
+        $ttd_pelapor = "";
+        $created_by = $json->id_pengguna;  
+        $created_time = date("Y-m-d H:i:s");
+        $status = 0;
+
+        $transport = DB::insert(" INSERT INTO yakopi_transport (id_transport,id_project,id_provinces,id_cities,id_districts,nama_desa,nama_dusun,lat_transport,long_transport,transport_info,daerah_tujuan,kecamatan,desa,dusun,catatan_1,catatan_2,dilaporkan_oleh,ttd_pelapor,created_by,created_time,status)
+        VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        ",
+        [$id_project,$id_provinces,$id_cities,$id_districts,$nama_desa,$nama_dusun,$lat_transport,$long_transport,$transport_info,$daerah_tujuan,$kecamatan,$desa,$dusun,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time,$status]);
+    });
+
+    Route::post("/approve-transport", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_transport = $request->id_transport;
+        $status = 1;
+
+        $approve = DB::update("UPDATE yakopi_transport SET status=? WHERE id_transport=?",[$status,$id_transport]);
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil Mengkonfirmasi Data"
+        ];
+    });
+
+    Route::post("/reject-transport", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_transport = $request->id_transport;
+        $status = 2;
+
+        $reject = DB::update("UPDATE yakopi_transport SET status=? WHERE id_transport=?",[$status,$id_transport]);
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil Menolak Data"
+        ];
+    });
+
+    Route::post("/add-kind-transport", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_transport = $request->id_transport;
+        $date_transport = $request->date_transport;
+        $jumlah_pekerja = $request->jumlah_pekerja;
+        $lat_detail_transport = $request->coordinate["latitude"];
+        $long_detail_transport = $request->coordinate["longitude"];
+        $r_mucronota = $request->r_mucronota;
+        $r_stylosa = $request->r_stylosa;
+        $r_apiculata = $request->r_apiculata;
+        $avicennia_spp = $request->avicennia_spp;
+        $ceriops_spp = $request->ceriops_spp;
+        $xylocarpus_spp = $request->xylocarpus_spp;
+        $bruguiera_spp = $request->bruguiera_spp;
+        $sonneratia_spp = $request->sonneratia_spp;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $kindTransport = DB::insert("INSERT INTO yakopi_detail_transport (id_detail_transport,id_transport,date_transport,jumlah_pekerja,lat_detail_transport,long_detail_transport,r_mucronota,r_stylosa,r_apiculata,avicennia_spp,ceriops_spp,xylocarpus_spp,bruguiera_spp,sonneratia_spp,created_by,created_time)
+        VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+        ,[$id_transport,$date_transport,$jumlah_pekerja,$lat_detail_transport,$long_detail_transport,$r_mucronota,$r_stylosa,$r_apiculata,$avicennia_spp,$ceriops_spp,$xylocarpus_spp,$bruguiera_spp,$sonneratia_spp,$created_by,$created_time]);
+        
+        if ($kindTransport) {
+            return [
+                "success"=>true,
+                "msg"=>"Data berhasil disimpan"
+            ];
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data gagal disimpan"
+            ];
+        }
+    });
+
+    Route::delete("/delete-kind-transport", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_detail_transport = $request->id_detail_transport;
+        
+        $cekId = DB::select("SELECT * FROM yakopi_detail_transport WHERE id_detail_transport=?",[$id_detail_transport]);
+        if(count($cekId)>0){
+            $id_transport = $cekId[0]->id_transport;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_transport WHERE id_transport=?",[$id_transport]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_detail_transport WHERE id_detail_transport=?",[$id_detail_transport]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::post("/photo-transport", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_transport;
+
+        $photo = DB::select("SELECT * FROM yakopi_transport_photo WHERE id_detail_transport=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$photo
+        ];
+    });
+
+    Route::post("/add-photo-transport", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_transport;
+        $keterangan = $request->keterangan_transport_photo;
+        $link = $request->link_transport_photo;
+        $file = $request->file_transport_photo;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $photo = DB::insert("INSERT INTO yakopi_transport_photo (id_transport_photo,id_detail_transport,keterangan_transport_photo,link_transport_photo,file_transport_photo,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?)"
+        ,[null,$id,$keterangan,$link,$file,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil disimpan"
+        ];
+
+    });
+
+    Route::delete("/delete-photo-transport", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_transport_photo;
+
+        $cekId = DB::select("SELECT * FROM yakopi_transport_photo WHERE id_transport_photo=?",[$id]);
+
+        if(count($cekId)>0){
+            $id1 = $cekId[0]->id_detail_transport;
+
+            $cekStatus1 = DB::select("SELECT * FROM yakopi_detail_transport WHERE id_detail_transport=?",[$id1]);
+
+            $id2 = $cekStatus1[0]->id_transport;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_transport WHERE id_transport=?",[$id2]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_transport_photo WHERE id_transport_photo=?",[$id]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::post("/video-transport", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_transport;
+
+        $video = DB::select("SELECT * FROM yakopi_transport_video WHERE id_detail_transport=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$video
+        ];
+    });
+
+    Route::post("/add-video-transport", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_transport;
+        $keterangan = $request->keterangan_transport_video;
+        $link = $request->link_transport_video;
+        $file = $request->file_transport_video;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $video = DB::insert("INSERT INTO yakopi_transport_video (id_transport_video,id_detail_transport,keterangan_transport_video,link_transport_video,file_transport_video,created_by,created_time)
+        VALUES (null,?,?,?,?,?,?,?)"
+        ,[$id,$keterangan,$link,$file,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil disimpan"
+        ];
+
+    });
+
+    Route::delete("/delete-video-transport", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_transport_video;
+
+        $cekId = DB::select("SELECT * FROM yakopi_transport_video WHERE id_transport_video=?",[$id]);
+
+        if(count($cekId)>0){
+            $id1 = $cekId[0]->id_detail_transport;
+
+            $cekStatus1 = DB::select("SELECT * FROM yakopi_detail_transport WHERE id_detail_transport=?",[$id1]);
+
+            $id2 = $cekStatus1[0]->id_transport;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_transport WHERE id_transport=?",[$id2]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_transport_video WHERE id_transport_video=?",[$id]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::post("/drone-transport", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_transport;
+
+        $drone = DB::select("SELECT * FROM yakopi_transport_drone WHERE id_detail_transport=?",[$id]);
+        
+        return [
+            "success"=>true,
+            "data"=>$drone
+        ];
+
+    });
+
+    Route::post("/add-drone-transport", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_transport;
+        $keterangan = $request->keterangan_transport_drone;
+        $link = $request->link_transport_drone;
+        $file = $request->file_transport_drone;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $drone = DB::insert("INSERT INTO yakopi_transport_drone (id_transport_drone,id_detail_transport,keterangan_transport_drone,link_transport_drone,file_transport_drone,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?)"
+        ,[null,$id,$keterangan,$link,$file,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil disimpan"
+        ];
+
+    });
+
+    Route::delete("/delete-drone-transport", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_transport_drone;
+
+        $cekId = DB::select("SELECT * FROM yakopi_transport_drone WHERE id_transport_drone=?",[$id]);
+
+        if(count($cekId)>0){
+            $id1 = $cekId[0]->id_detail_transport;
+
+            $cekStatus1 = DB::select("SELECT * FROM yakopi_detail_transport WHERE id_detail_transport=?",[$id1]);
+
+            $id2 = $cekStatus1[0]->id_transport;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_transport WHERE id_transport=?",[$id2]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_transport_drone WHERE id_transport_drone=?",[$id]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::delete("/delete-transport", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_transport;
+
+        $cekId = DB::select("SELECT * FROM yakopi_transport WHERE id_transport=?",[$id]);
+
+        if(count($cekId)>0){
+            $id1 = $cekId[0]->id_transport;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_transport WHERE id_transport=?",[$id1]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_transport WHERE id_transport=?",[$id1]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    // TRANSPORT END
 
         
 
