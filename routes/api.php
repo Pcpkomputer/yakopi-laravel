@@ -2211,6 +2211,18 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         ",
         [$id_project,$id_provinces,$id_cities,$id_districts,$nama_desa,$nama_dusun,$lat_transport,$long_transport,$transport_info,$daerah_tujuan,$kecamatan,$desa,$dusun,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time,$status]);
+    
+        if ($transport) {
+            return [
+                "success"=>true,
+                "message"=>"Transport berhasil ditambahkan"
+            ];
+        }else{
+            return [
+                "success"=>false,
+                "message"=>"Transport gagal ditambahkan"
+            ];
+        }
     });
 
     Route::post("/approve-transport", function (Request $request){
@@ -2240,6 +2252,21 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         return [
             "success"=>true,
             "msg"=>"Berhasil Menolak Data"
+        ];
+    });
+    
+    Route::post("/kind-transport", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_transport = $request->id_transport;
+
+        $kind_planting_action = DB::select("SELECT * FROM yakopi_detail_transport WHERE id_transport=?",[$id_transport]);
+
+        return [
+            "success"=>true,
+            "data"=>$kind_planting_action
         ];
     });
 
@@ -2418,7 +2445,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $created_time = date("Y-m-d H:i:s");
 
         $video = DB::insert("INSERT INTO yakopi_transport_video (id_transport_video,id_detail_transport,keterangan_transport_video,link_transport_video,file_transport_video,created_by,created_time)
-        VALUES (null,?,?,?,?,?,?,?)"
+        VALUES (null,?,?,?,?,?,?)"
         ,[$id,$keterangan,$link,$file,$created_by,$created_time]);
 
         return [
