@@ -178,6 +178,60 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
     // GENERAL API END
 
+    // CUTI START
+
+    Route::get("/cuti", function (Request $request){
+        $token = $request->bearerToken();
+    
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $cuti = DB::select("SELECT * FROM yakopi_cuti 
+        LEFT JOIN yakopi_pengguna ON yakopi_pengguna.id_pengguna=yakopi_cuti.created_by
+        LEFT JOIN yakopi_kategori_cuti ON yakopi_kategori_cuti.id_kategori_cuti=yakopi_cuti.id_kategori_cuti
+        ");
+        return [
+            "success"=>true,
+            "data"=>$cuti
+        ];
+    });
+
+    Route::get("/cuti/{id}", function (Request $request, $id){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+        $cuti = DB::select("SELECT * FROM yakopi_cuti 
+        LEFT JOIN yakopi_pengguna ON yakopi_pengguna.id_pengguna=yakopi_cuti.created_by
+        LEFT JOIN yakopi_kategori_cuti ON yakopi_kategori_cuti.id_kategori_cuti=yakopi_cuti.id_kategori_cuti
+        WHERE id_cuti=?",[$id]);
+        return [
+            "success"=>true,
+            "data"=>$cuti
+        ];
+    });
+
+    Route::post("/cuti", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $tanggal_mulai_cuti = $request->tanggal_mulai_cuti;
+        $tanggal_selesai_cuti = $request->tanggal_selesai_cuti;
+        $keterangan_cuti = $request->keterangan_cuti;
+        $status_cuti = 'Pending';
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+        $id_kategori_cuti = $request->id_kategori_cuti;
+
+        $cuti = DB::insert("INSERT INTO yakopi_cuti (id_cuti,tanggal_mulai_cuti, tanggal_selesai_cuti, keterangan_cuti, status_cuti, created_by, created_time, id_kategori_cuti) 
+        VALUES (null,?,?,?,?,?,?,?)",[$tanggal_mulai_cuti, $tanggal_selesai_cuti, $keterangan_cuti, $status_cuti, $created_by, $created_time, $id_kategori_cuti]);
+
+        return [
+            "success"=>true,
+            "data"=>$cuti
+        ];
+    });
+
 
     // PRESENSI START
 
