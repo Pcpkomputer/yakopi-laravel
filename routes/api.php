@@ -180,6 +180,14 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
     // CUTI START
 
+    Route::get("/kategori-cuti", function (Request $request){
+        $kategori = DB::select("SELECT * FROM yakopi_kategori_cuti");
+        return [
+            "success"=>true,
+            "data"=>$kategori
+        ];
+    });
+
     Route::get("/cuti", function (Request $request){
         $token = $request->bearerToken();
     
@@ -226,6 +234,49 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $cuti = DB::insert("INSERT INTO yakopi_cuti (id_cuti,tanggal_mulai_cuti, tanggal_selesai_cuti, keterangan_cuti, status_cuti, created_by, created_time, id_kategori_cuti) 
         VALUES (null,?,?,?,?,?,?,?)",[$tanggal_mulai_cuti, $tanggal_selesai_cuti, $keterangan_cuti, $status_cuti, $created_by, $created_time, $id_kategori_cuti]);
 
+        return [
+            "success"=>true,
+            "data"=>$cuti
+        ];
+    });
+
+    Route::delete("/delete-cuti", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_cuti = $request->id_cuti;
+
+        $selectCuti = DB::select("SELECT * FROM yakopi_cuti WHERE id_cuti=?",[$id_cuti]);
+
+        if($selectCuti){
+            $cuti = DB::delete("DELETE FROM yakopi_cuti WHERE id_cuti=?",[$id_cuti]);
+            return [
+                "success"=>true,
+                "id"=>$id_cuti,
+                "data"=>$selectCuti,
+                "message"=>"Cuti berhasil dihapus"
+            ];
+        }else{
+            return [
+                "success"=>false,
+                "id"=>$id_cuti,
+                "data"=>$selectCuti,
+                "message"=>"Cuti tidak ditemukan"
+            ];
+        }
+    });
+
+    Route::put("/pengajuan-cuti", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_cuti;
+        $status_cuti = 'Diajukan';
+
+        $cuti = DB::update("UPDATE yakopi_cuti SET status_cuti=? WHERE id_cuti=?",[$status_cuti, $id]);
+        
         return [
             "success"=>true,
             "data"=>$cuti
