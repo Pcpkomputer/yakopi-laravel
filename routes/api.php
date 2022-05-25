@@ -204,14 +204,17 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         ];
     });
 
-    Route::get("/cuti/{id}", function (Request $request, $id){
+    Route::post("/get-cuti", function (Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
+
+        $id = $json->id_pengguna;
+
         $cuti = DB::select("SELECT * FROM yakopi_cuti 
         LEFT JOIN yakopi_pengguna ON yakopi_pengguna.id_pengguna=yakopi_cuti.created_by
         LEFT JOIN yakopi_kategori_cuti ON yakopi_kategori_cuti.id_kategori_cuti=yakopi_cuti.id_kategori_cuti
-        WHERE id_cuti=?",[$id]);
+        WHERE yakopi_cuti.created_by=?",[$id]);
         return [
             "success"=>true,
             "data"=>$cuti
