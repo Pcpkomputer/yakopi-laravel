@@ -958,6 +958,8 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $id_collecting_seed = $request->id_collecting_seed;
         $tanggal_collecting = $request->tanggal_collecting;
         $jumlah_pekerja = $request->jumlah_pekerja;
+        $pria = $request->pria;
+        $wanita = $request->wanita;
         $r_mucronoto = $request->r_mucronoto;
         $r_styloso = $request->r_styloso;
         $r_apiculata = $request->r_apiculata;
@@ -969,9 +971,9 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $created_by = $json->id_pengguna;
         $created_time = date("Y-m-d H:i:s");
 
-        $kindSeedCollecting = DB::insert("INSERT INTO yakopi_detail_collecting_seed (id_detail_collecting_seed,id_collecting_seed,tanggal_collecting,jumlah_pekerja,r_mucronoto,r_styloso,r_apiculata,avicennia_spp,ceriops_spp,xylocarpus_spp,bruguiera_spp,sonneratia_spp,created_by,created_time)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
-        ,[null,$id_collecting_seed,$tanggal_collecting,$jumlah_pekerja,$r_mucronoto,$r_styloso,$r_apiculata,$avicennia_spp,$ceriops_spp,$xylocarpus_spp,$bruguiera_spp,$sonneratia_spp,$created_by,$created_time]);
+        $kindSeedCollecting = DB::insert("INSERT INTO yakopi_detail_collecting_seed (id_detail_collecting_seed,id_collecting_seed,tanggal_collecting,jumlah_pekerja,pria,wanita,r_mucronoto,r_styloso,r_apiculata,avicennia_spp,ceriops_spp,xylocarpus_spp,bruguiera_spp,sonneratia_spp,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+        ,[null,$id_collecting_seed,$tanggal_collecting,$jumlah_pekerja,$pria,$wanita,$r_mucronoto,$r_styloso,$r_apiculata,$avicennia_spp,$ceriops_spp,$xylocarpus_spp,$bruguiera_spp,$sonneratia_spp,$created_by,$created_time]);
         
         return [
             "success"=>true,
@@ -1423,6 +1425,8 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $id_nursery_activity = $request->id_nursery_activity;
         $tanggal_collecting = $request->tanggal_collecting;
         $jumlah_pekerja = $request->jumlah_pekerja;
+        $pria = $request->pria;
+        $wanita = $request->wanita;
         $r_mucronoto = $request->r_mucronoto;
         $r_styloso = $request->r_styloso;
         $r_apiculata = $request->r_apiculata;
@@ -1434,9 +1438,9 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $created_by = $json->id_pengguna;
         $created_time = date("Y-m-d H:i:s");
 
-        $kindSeedCollecting = DB::insert("INSERT INTO yakopi_detail_nursery_activity (id_detail_nursery_activity,id_nursery_activity,tanggal_collecting,jumlah_pekerja,r_mucronoto,r_styloso,r_apiculata,avicennia_spp,ceriops_spp,xylocarpus_spp,bruguiera_spp,sonneratia_spp,created_by,created_time)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
-        ,[null,$id_nursery_activity,$tanggal_collecting,$jumlah_pekerja,$r_mucronoto,$r_styloso,$r_apiculata,$avicennia_spp,$ceriops_spp,$xylocarpus_spp,$bruguiera_spp,$sonneratia_spp,$created_by,$created_time]);
+        $kindSeedCollecting = DB::insert("INSERT INTO yakopi_detail_nursery_activity (id_detail_nursery_activity,id_nursery_activity,tanggal_collecting,jumlah_pekerja,pria,wanita,r_mucronoto,r_styloso,r_apiculata,avicennia_spp,ceriops_spp,xylocarpus_spp,bruguiera_spp,sonneratia_spp,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+        ,[null,$id_nursery_activity,$tanggal_collecting,$jumlah_pekerja,$pria,$wanita,$r_mucronoto,$r_styloso,$r_apiculata,$avicennia_spp,$ceriops_spp,$xylocarpus_spp,$bruguiera_spp,$sonneratia_spp,$created_by,$created_time]);
         
         return [
             "success"=>true,
@@ -1891,6 +1895,8 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $id_planting_action = $request->id_planting_action;
         $date_planting_action = $request->date_planting_action;
         $jumlah_pekerja = $request->jumlah_pekerja;
+        $pria = $request->pria;
+        $wanita = $request->wanita;
         $kode_site = $request->kode_site;
         $kode_plot = $request->kode_plot;
         $lat_detail_planting_action = $request->coordinate["latitude"];
@@ -1908,9 +1914,9 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $created_by = $json->id_pengguna;
         $created_time = date("Y-m-d H:i:s");
 
-        $kindPlantingAction = DB::insert(" INSERT INTO yakopi_detail_planting_action (id_detail_planting_action,id_planting_action,date_planting_action,jumlah_pekerja,kode_site,kode_plot,lat_detail_planting_action,long_detail_planting_action,sistem_tanam_1,sistem_tanam_2,r_mucronota,r_stylosa,r_apiculata,avicennia_spp,ceriops_spp,xylocarpus_spp,bruguiera_spp,sonneratia_spp,created_by,created_time)
-        VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-        ",[$id_planting_action,$date_planting_action,$jumlah_pekerja,$kode_site,$kode_plot,$lat_detail_planting_action,$long_detail_planting_action,$sistem_tanam_1,$sistem_tanam_2,$r_mucronota,$r_stylosa,$r_apiculata,$avicennia_spp,$ceriops_spp,$xylocarpus_spp,$bruguiera_spp,$sonneratia_spp,$created_by,$created_time]);
+        $kindPlantingAction = DB::insert(" INSERT INTO yakopi_detail_planting_action (id_detail_planting_action,id_planting_action,date_planting_action,jumlah_pekerja,pria,wanita,kode_site,kode_plot,lat_detail_planting_action,long_detail_planting_action,sistem_tanam_1,sistem_tanam_2,r_mucronota,r_stylosa,r_apiculata,avicennia_spp,ceriops_spp,xylocarpus_spp,bruguiera_spp,sonneratia_spp,created_by,created_time)
+        VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        ",[$id_planting_action,$date_planting_action,$jumlah_pekerja,$pria,$wanita,$kode_site,$kode_plot,$lat_detail_planting_action,$long_detail_planting_action,$sistem_tanam_1,$sistem_tanam_2,$r_mucronota,$r_stylosa,$r_apiculata,$avicennia_spp,$ceriops_spp,$xylocarpus_spp,$bruguiera_spp,$sonneratia_spp,$created_by,$created_time]);
         if($kindPlantingAction){
             return [
                 "success"=>true,
@@ -2386,6 +2392,8 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $id_transport = $request->id_transport;
         $date_transport = $request->date_transport;
         $jumlah_pekerja = $request->jumlah_pekerja;
+        $pria = $request->pria;
+        $wanita = $request->wanita;
         $lat_detail_transport = $request->coordinate["latitude"];
         $long_detail_transport = $request->coordinate["longitude"];
         $r_mucronota = $request->r_mucronota;
@@ -2399,9 +2407,9 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $created_by = $json->id_pengguna;
         $created_time = date("Y-m-d H:i:s");
 
-        $kindTransport = DB::insert("INSERT INTO yakopi_detail_transport (id_detail_transport,id_transport,date_transport,jumlah_pekerja,lat_detail_transport,long_detail_transport,r_mucronota,r_stylosa,r_apiculata,avicennia_spp,ceriops_spp,xylocarpus_spp,bruguiera_spp,sonneratia_spp,created_by,created_time)
-        VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
-        ,[$id_transport,$date_transport,$jumlah_pekerja,$lat_detail_transport,$long_detail_transport,$r_mucronota,$r_stylosa,$r_apiculata,$avicennia_spp,$ceriops_spp,$xylocarpus_spp,$bruguiera_spp,$sonneratia_spp,$created_by,$created_time]);
+        $kindTransport = DB::insert("INSERT INTO yakopi_detail_transport (id_detail_transport,id_transport,date_transport,jumlah_pekerja,pria,wanita,lat_detail_transport,long_detail_transport,r_mucronota,r_stylosa,r_apiculata,avicennia_spp,ceriops_spp,xylocarpus_spp,bruguiera_spp,sonneratia_spp,created_by,created_time)
+        VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
+        ,[$id_transport,$date_transport,$jumlah_pekerja,$pria,$wanita,$lat_detail_transport,$long_detail_transport,$r_mucronota,$r_stylosa,$r_apiculata,$avicennia_spp,$ceriops_spp,$xylocarpus_spp,$bruguiera_spp,$sonneratia_spp,$created_by,$created_time]);
         
         if ($kindTransport) {
             return [
@@ -2713,6 +2721,756 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
     });
 
     // TRANSPORT END
+
+    // GROWTH START
+
+    Route::get("/growth", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $data = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_growth AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        ");
+
+        return [
+            "success"=>true,
+            "data"=>$data
+        ];
+
+    });
+
+    Route::get("/growth/{id_growth}", function (Request $request,$id_growth){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $data = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_growth AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        WHERE la.id_growth=?
+        ",[$id_growth]);
+
+        $detail = DB::select("
+        SELECT * FROM yakopi_detail_growth WHERE id_growth=?",[$id_growth]);
+
+        return [
+            "success"=>true,
+            "data"=>$data,
+            "detail"=>$detail
+        ];
+
+    });
+
+    Route::get("/history-growth/{id_pengguna}", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $data = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_growth AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        WHERE la.created_by=?
+        ",[$json->id_pengguna]);
+
+        return [
+            "success"=>true,
+            "data"=>$data
+        ];
+    });
+
+    Route::post("/growth", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_project = $request->project;
+        $id_provinces = $request->province;
+        $id_cities = $request->city;
+        $id_districts = $request->district;
+        $nama_desa = $request->village;
+        $nama_dusun = $request->backwood;
+        $posisi_site = $request->position;
+        $distance_growth = $request->distance;
+        $type_magrove_growth = $request->type_magrove;
+        $catatan_khusus_1 = $request->catatan_khusus_1;
+        $catatan_khusus_2 = $request->catatan_khusus_2;
+        $nama_surveyor = $request->nama_surveyor;
+        $ttd_surveyor = "";
+        $created_by = $json->id_pengguna;  
+        $created_time = date("Y-m-d H:i:s");
+        $status = 0;
+
+        $data = DB::insert(" INSERT INTO yakopi_growth (id_growth,id_project,id_provinces,id_cities,id_districts,nama_desa,nama_dusun,posisi_site,distance_growth,type_magrove_growth,catatan_khusus_1,catatan_khusus_2,nama_surveyor,ttd_surveyor,created_by,created_time,status) 
+        VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        [$id_project,$id_provinces,$id_cities,$id_districts,$nama_desa,$nama_dusun,$posisi_site,$distance_growth,$type_magrove_growth,$catatan_khusus_1,$catatan_khusus_2,$nama_surveyor,$ttd_surveyor,$created_by,$created_time,$status]);
+        
+        if ($data) {
+            return [
+                "success"=>true,
+                "message"=>"Growth berhasil ditambahkan"
+            ];
+        }else{
+            return [
+                "success"=>false,
+                "message"=>"Growth gagal ditambahkan"
+            ];
+        }
+    });
+
+    Route::post("/approve-growth", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_growth = $request->id_growth;
+        $status = 1;
+
+        $approve = DB::update("UPDATE yakopi_growth SET status=? WHERE id_growth=?",[$status,$id_growth]);
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil Mengkonfirmasi Data"
+        ];
+    });
+
+    Route::post("/reject-growth", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_growth = $request->id_growth;
+        $status = 2;
+
+        $reject = DB::update("UPDATE yakopi_growth SET status=? WHERE id_growth=?",[$status,$id_growth]);
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil Menolak Data"
+        ];
+    });
+
+    Route::post("/kind-growth", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_growth = $request->id_growth;
+
+        $kind = DB::select("SELECT * FROM yakopi_detail_growth WHERE id_growth=?",[$id_growth]);
+
+        return [
+            "success"=>true,
+            "data"=>$kind
+        ];
+    });
+
+    Route::post("/add-kind-growth", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_growth = $request->id_growth;
+        $site_code = $request->site_code;
+        $plot_code = $request->plot_code;
+        $luas = $request->luas;
+        $lat_detail_growth = $request->coordinate["latitude"];
+        $long_detail_growth = $request->coordinate["longitude"];
+        $jenis_magrove = $request->jenis_magrove;
+        $kematian = $request->kematian;
+        $penyebab_kematian = $request->penyebab_kematian;
+        $jenis_tanah = $request->jenis_tanah;
+        $status_tambak = $request->status_tambak;
+        $biodiversity = $request->biodiversity;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $kind = DB::insert("INSERT INTO yakopi_detail_growth (id_detail_growth,id_growth,site_code,plot_code,luas,lat_detail_growth,long_detail_growth,jenis_magrove,kematian,penyebab_kematian,jenis_tanah,status_tambak,biodiversity,created_by,created_time)
+        VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        [$id_growth,$site_code,$plot_code,$luas,$lat_detail_growth,$long_detail_growth,$jenis_magrove,$kematian,$penyebab_kematian,$jenis_tanah,$status_tambak,$biodiversity,$created_by,$created_time]);
+        
+        if ($kind) {
+            return [
+                "success"=>true,
+                "msg"=>"Data berhasil disimpan"
+            ];
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data gagal disimpan"
+            ];
+        }
+    });
+
+    Route::delete("/delete-kind-growth", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_detail_growth = $request->id_detail_growth;
+        
+        $cekId = DB::select("SELECT * FROM yakopi_detail_growth WHERE id_detail_growth=?",[$id_detail_growth]);
+        if(count($cekId)>0){
+            $id_growth = $cekId[0]->id_growth;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_growth WHERE id_growth=?",[$id_growth]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_detail_growth WHERE id_detail_growth=?",[$id_detail_growth]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::delete("/delete-growth", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_growth;
+
+        $cekId = DB::select("SELECT * FROM yakopi_growth WHERE id_growth=?",[$id]);
+
+        if(count($cekId)>0){
+            $id1 = $cekId[0]->id_growth;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_growth WHERE id_growth=?",[$id1]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_growth WHERE id_growth=?",[$id1]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    // END GROWTH
+
+    // REPLANTING ACTION START
+
+    Route::get("/replanting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_planting_action;
+
+        $planting = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_replanting AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        ");
+
+        return [
+            "success"=>true,
+            "data"=>$planting
+        ];
+
+    });
+
+    Route::get("/replanting/{id_replanting}", function (Request $request,$id_replanting){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $plantingAction = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_replanting AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        WHERE la.id_replanting=?
+        ",[$id_replanting]);
+
+        $detailPlantingAction = DB::select("
+        SELECT * FROM yakopi_detail_replanting WHERE id_replanting=?",[$id_replanting]);
+
+        return [
+            "success"=>true,
+            "data"=>$plantingAction,
+            "detail_planting_action"=>$detailPlantingAction
+        ];
+
+    });
+
+    Route::get("/history-replanting/{id_pengguna}", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $plantingAction = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_replanting AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        WHERE la.created_by=?
+        ",[$json->id_pengguna]);
+
+        return [
+            "success"=>true,
+            "data"=>$plantingAction
+        ];
+    });
+
+    Route::post("/replanting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_project = $request->project;
+        $id_provinces = $request->province;
+        $id_cities = $request->city;
+        $id_districts = $request->district;
+        $nama_desa = $request->village;
+        $nama_dusun = $request->backwood;
+        $jarak_tanam = $request->jarak_tanam;
+        $lokasi_tanam = $request->lokasi_tanam;
+        $info_1 = $request->info_1;
+        $catatan_1 = $request->catatan_1;
+        $catatan_2 = $request->catatan_2;
+        $dilaporkan_oleh = $request->dilaporkan_oleh;
+        $ttd_pelapor = "";
+        $created_by = $json->id_pengguna;  
+        $created_time = date("Y-m-d H:i:s");
+        $status = 0;
+
+        $plantingAction = DB::insert(" INSERT INTO yakopi_replanting (id_planting_action,id_project,id_provinces,id_cities,id_districts,nama_desa,nama_dusun,jarak_tanam,lokasi_tanam,info_1,catatan_1,catatan_2,dilaporkan_oleh,ttd_pelapor,created_by,created_time,status)
+        VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        ",[$id_project,$id_provinces,$id_cities,$id_districts,$nama_desa,$nama_dusun,$jarak_tanam,$lokasi_tanam,$info_1,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time,$status]);
+        if($plantingAction){
+            return [
+                "success"=>true,
+                "msg"=>"Data berhasil ditambahkan"
+            ];
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat ditambahkan"
+            ];
+        }
+    });
+
+    Route::post("/approve-replanting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_replanting = $request->id_replanting;
+        $status = 1;
+
+        $approvePlantingAction = DB::update("UPDATE yakopi_replanting SET status=? WHERE id_replanting=?",[$status,$id_replanting]);
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil Mengkonfirmasi Data"
+        ];
+    });
+
+    Route::post("/reject-replanting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_replanting = $request->id_replanting;
+        $status = 2;
+
+        $rejectPlantingAction = DB::update("UPDATE yakopi_replanting SET status=? WHERE id_replanting=?",[$status,$id_replanting]);
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil Menolak Data"
+        ];
+    });
+
+    Route::post("/kind-replanting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_replanting = $request->id_replanting;
+
+        $kind_planting_action = DB::select("SELECT * FROM yakopi_detail_replanting WHERE id_replanting=?",[$id_replanting]);
+
+        return [
+            "success"=>true,
+            "data"=>$kind_planting_action
+        ];
+    });
+
+    Route::post("/add-kind-replanting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_replanting = $request->id_replanting;
+        $site_code = $request->site_code;
+        $plot_code = $request->plot_code;
+        $area_plot = $request->area_plot;
+        $lat_detail_replanting = $request->coordinate["latitude"];
+        $long_detail_replanting = $request->coordinate["longitude"];
+        $kematian = $request->kematian;
+        $sistem_tanam_1 = $request->sistem_tanam_1;
+        $sistem_tanam_2 = $request->sistem_tanam_2;
+        $r_mucronota = $request->r_mucronota;
+        $r_stylosa = $request->r_stylosa;
+        $r_apiculata = $request->r_apiculata;
+        $avicennia_spp = $request->avicennia_spp;
+        $ceriops_spp = $request->ceriops_spp;
+        $xylocarpus_spp = $request->xylocarpus_spp;
+        $bruguiera_spp = $request->bruguiera_spp;
+        $sonneratia_spp = $request->sonneratia_spp;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $kindPlantingAction = DB::insert(" INSERT INTO yakopi_detail_replanting (id_detail_replanting,id_replanting,site_code,plot_code,area_plot,lat_detail_replanting,long_detail_replanting,kematian,sistem_tanam_1,sistem_tanam_2,r_mucronota,r_stylosa,r_apiculata,avicennia_spp,ceriops_spp,xylocarpus_spp,bruguiera_spp,sonneratia_spp,created_by,created_time)
+        VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        ",[$id_replanting,$site_code,$plot_code,$area_plot,$lat_detail_replanting,$long_detail_replanting,$kematian,$sistem_tanam_1,$sistem_tanam_2,$r_mucronota,$r_stylosa,$r_apiculata,$avicennia_spp,$ceriops_spp,$xylocarpus_spp,$bruguiera_spp,$sonneratia_spp,$created_by,$created_time]);
+        if($kindPlantingAction){
+            return [
+                "success"=>true,
+                "msg"=>"Data berhasil ditambahkan"
+            ];
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat ditambahkan"
+            ];
+        }
+    });
+
+    Route::delete("/delete-kind-replanting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_detail_replanting = $request->id_detail_replanting;
+        
+        $cekId = DB::select("SELECT * FROM yakopi_detail_replanting WHERE id_detail_replanting=?",[$id_detail_replanting]);
+        if(count($cekId)>0){
+            $id_replanting = $cekId[0]->id_replanting;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_replanting WHERE id_replanting=?",[$id_replanting]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_detail_replanting WHERE id_detail_replanting=?",[$id_detail_replanting]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::post("/photo-replanting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_replanting;
+
+        $photo = DB::select("SELECT * FROM yakopi_replanting_photo WHERE id_detail_replanting=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$photo
+        ];
+    });
+
+    Route::post("/add-photo-replanting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_replanting;
+        $keterangan = $request->keterangan_replanting_photo;
+        $link = $request->link_replanting_photo;
+        $file = $request->file_replanting_photo;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $photo = DB::insert("INSERT INTO yakopi_replanting_photo (id_replanting_photo,id_detail_replanting,keterangan_replanting_photo,link_replanting_photo,file_replanting_photo,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?)"
+        ,[null,$id,$keterangan,$link,$file,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil disimpan"
+        ];
+
+    });
+
+    Route::delete("/delete-photo-replanting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_replanting_photo;
+
+        $cekId = DB::select("SELECT * FROM yakopi_replanting_photo WHERE id_replanting_photo=?",[$id]);
+
+        if(count($cekId)>0){
+            $id1 = $cekId[0]->id_detail_replanting;
+
+            $cekStatus1 = DB::select("SELECT * FROM yakopi_detail_replanting WHERE id_detail_replanting=?",[$id1]);
+
+            $id2 = $cekStatus1[0]->id_replanting;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_replanting WHERE id_replanting=?",[$id2]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_replanting_photo WHERE id_replanting_photo=?",[$id]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::post("/video-replanting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_replanting;
+
+        $video = DB::select("SELECT * FROM yakopi_replanting_video WHERE id_detail_replanting=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$video
+        ];
+    });
+
+    Route::post("/add-video-replanting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_replanting;
+        $keterangan = $request->keterangan_replanting_video;
+        $link = $request->link_replanting_video;
+        $file = $request->file_replanting_video;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $video = DB::insert("INSERT INTO yakopi_replanting_video (id_replanting_video,id_detail_replanting,keterangan_replanting_video,link_replanting_video,file_replanting_video,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?)"
+        ,[null,$id,$keterangan,$link,$file,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil disimpan"
+        ];
+
+    });
+
+    Route::delete("/delete-video-replanting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_replanting_video;
+
+        $cekId = DB::select("SELECT * FROM yakopi_replanting_video WHERE id_replanting_video=?",[$id]);
+
+        if(count($cekId)>0){
+            $id1 = $cekId[0]->id_detail_replanting;
+
+            $cekStatus1 = DB::select("SELECT * FROM yakopi_detail_replanting WHERE id_detail_replanting=?",[$id1]);
+
+            $id2 = $cekStatus1[0]->id_replanting;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_replanting WHERE id_replanting=?",[$id2]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_replanting_video WHERE id_replanting_video=?",[$id]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::post("/drone-replanting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_replanting;
+
+        $drone = DB::select("SELECT * FROM yakopi_replanting_drone WHERE id_detail_replanting=?",[$id]);
+        
+        return [
+            "success"=>true,
+            "data"=>$drone
+        ];
+
+    });
+
+    Route::post("/add-drone-replanting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_replanting;
+        $keterangan = $request->keterangan_replanting_drone;
+        $link = $request->link_replanting_drone;
+        $file = $request->file_replanting_drone;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $drone = DB::insert("INSERT INTO yakopi_replanting_drone (id_replanting_drone,id_detail_replanting,keterangan_replanting_drone,link_replanting_drone,file_replanting_drone,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?)"
+        ,[null,$id,$keterangan,$link,$file,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil disimpan"
+        ];
+
+    });
+
+    Route::delete("/delete-drone-replanting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_replanting_drone;
+
+        $cekId = DB::select("SELECT * FROM yakopi_replanting_drone WHERE id_replanting_drone=?",[$id]);
+
+        if(count($cekId)>0){
+            $id1 = $cekId[0]->id_detail_replanting;
+
+            $cekStatus1 = DB::select("SELECT * FROM yakopi_detail_replanting WHERE id_detail_replanting=?",[$id1]);
+
+            $id2 = $cekStatus1[0]->id_replanting;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_replanting WHERE id_replanting=?",[$id2]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_replanting_drone WHERE id_replanting_drone=?",[$id]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::delete("/delete-replanting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_replanting;
+
+        $cekId = DB::select("SELECT * FROM yakopi_replanting WHERE id_replanting=?",[$id]);
+
+        if(count($cekId)>0){
+            $id1 = $cekId[0]->id_replanting;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_replanting WHERE id_replanting=?",[$id1]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_replanting WHERE id_replanting=?",[$id1]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    // REPLANTING ACTION END
+
+
 
         
 
