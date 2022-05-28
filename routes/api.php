@@ -3494,7 +3494,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
     });
 
-    Route::get("/planting-action-id", function (Request $request){
+    Route::get("/detail-subtitute-plot", function (Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
@@ -3665,16 +3665,16 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
 
-        $id_subtitute_plot = $request->id_subtitute_plot;
+        $id_detail_subtitute_plot = $request->id_detail_subtitute_plot;
         
-        $cekId = DB::select("SELECT * FROM yakopi_detail_subtitute_plot WHERE id_subtitute_plot=?",[$id_subtitute_plot]);
+        $cekId = DB::select("SELECT * FROM yakopi_detail_subtitute_plot WHERE id_detail_subtitute_plot=?",[$id_detail_subtitute_plot]);
         if(count($cekId)>0){
             $id_subtitute_plot = $cekId[0]->id_subtitute_plot;
 
             $cekStatus = DB::select("SELECT * FROM yakopi_subtitute_plot WHERE id_subtitute_plot=?",[$id_subtitute_plot]);
 
             if($cekStatus[0]->status=="0"){
-                $delete = DB::delete("DELETE FROM yakopi_detail_subtitute_plot WHERE id_subtitute_plot=?",[$id_subtitute_plot]);
+                $delete = DB::delete("DELETE FROM yakopi_detail_subtitute_plot WHERE id_detail_subtitute_plot=?",[$id_detail_subtitute_plot]);
                 return [
                     "success"=>true,
                     "msg"=>"Data berhasil dihapus"
@@ -3957,6 +3957,495 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
     });
 
     // SUBTITUTE PLOT END
+
+    // REPLACEMENT PLOT START
+
+    Route::get("/replacement-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $data = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_replacement_plot AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        ");
+
+        return [
+            "success"=>true,
+            "data"=>$data
+        ];
+
+    });
+
+    Route::get("/detail-replacement-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_replacement_plot;
+
+        $data = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_replacement_plot AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        WHERE la.id_replacement_plot=?
+        ",[$id]);
+
+        $detail = DB::select("
+        SELECT * FROM yakopi_detail_subtitute_plot WHERE id_replacement_plot=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$data,
+            "detail"=>$detail
+        ];
+
+    });
+
+    Route::get("/history-replacement-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $data = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_replacement_plot AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        WHERE la.created_by=?
+        ",[$json->id_pengguna]);
+
+        return [
+            "success"=>true,
+            "data"=>$data
+        ];
+    });
+
+    Route::post("/replacement-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_project = $request->project;
+        $id_provinces = $request->province;
+        $id_cities = $request->city;
+        $id_districts = $request->district;
+        $nama_desa = $request->village;
+        $nama_dusun = $request->backwood;
+        $lokasi_tanam = $request->lokasi_tanam;
+        $jenis_tanam = $request->jenis_tanam;
+        $catatan_1 = $request->catatan_1;
+        $catatan_2 = $request->catatan_2;
+        $dilaporkan_oleh = $request->dilaporkan_oleh;
+        $ttd_pelapor = "";
+        $created_by = $json->id_pengguna;  
+        $created_time = date("Y-m-d H:i:s");
+        $status = 0;
+
+        $data = DB::insert(" INSERT INTO yakopi_replacement_plot (id_project,id_provinces,id_cities,id_districts,nama_desa,nama_dusun,lokasi_tanam,jenis_tanam,catatan_1,catatan_2,dilaporkan_oleh,ttd_pelapor,created_by,created_time,status) 
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        [$id_project,$id_provinces,$id_cities,$id_districts,$nama_desa,$nama_dusun,$lokasi_tanam,$jenis_tanam,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time,$status]);
+        if($data){
+            return [
+                "success"=>true,
+                "msg"=>"Data berhasil ditambahkan"
+            ];
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat ditambahkan"
+            ];
+        }
+    });
+
+    Route::post("/approve-replacement-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_replacement_plot;
+        $status = 1;
+
+        $approve = DB::update("UPDATE yakopi_replacement_plot SET status=? WHERE id_replacement_plot=?",[$status,$id]);
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil Mengkonfirmasi Data"
+        ];
+    });
+
+    Route::post("/reject-replacement-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_replacement_plot;
+        $status = 2;
+
+        $reject = DB::update("UPDATE yakopi_replacement_plot SET status=? WHERE id_replacement_plot=?",[$status,$id]);
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil Menolak Data"
+        ];
+    });
+
+    Route::post("/kind-replacement-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_replacement_plot;
+
+        $kind = DB::select("SELECT * FROM yakopi_detail_replacement_plot WHERE id_detail_replacement_plot=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$kind
+        ];
+    });
+
+    Route::post("/add-kind-replacement-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_replacement_plot = $request->id_replacement_plot;
+        $site_code_all = $request->site_code_all;
+        $plot_code_all = $request->plot_code_all;
+        $area_plot_all = $request->area_plot_all;
+        $plot_code = $request->plot_code;
+        $area_plot = $request->area_plot;
+        $lat_replacement_plot = $request->coordinate["latitude"];
+        $long_replacement_plot = $request->coordinate["longitude"];
+        $r_mucronata = $request->r_mucronata;
+        $r_stylosa = $request->r_stylosa;
+        $r_apiculata = $request->r_apiculata;
+        $avicennia_spp = $request->avicennia_spp;
+        $ceriops_spp = $request->ceriops_spp;
+        $xylocarpus_spp = $request->xylocarpus_spp;
+        $bruguiera_spp = $request->bruguiera_spp;
+        $sonneratia_spp = $request->sonneratia_spp;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $kind = DB::insert(" INSERT INTO yakopi_detail_replacement_plot (id_replacement_plot,site_code_all,plot_code_all,area_plot_all,plot_code,area_plot,lat_replacement_plot,long_replacement_plot,r_mucronata,r_stylosa,r_apiculata,avicennia_spp,ceriops_spp,xylocarpus_spp,bruguiera_spp,sonneratia_spp,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        [$id_replacement_plot,$site_code_all,$plot_code_all,$area_plot_all,$plot_code,$area_plot,$lat_replacement_plot,$long_replacement_plot,$r_mucronata,$r_stylosa,$r_apiculata,$avicennia_spp,$ceriops_spp,$xylocarpus_spp,$bruguiera_spp,$sonneratia_spp,$created_by,$created_time]);
+        if($kind){
+            return [
+                "success"=>true,
+                "msg"=>"Data berhasil ditambahkan"
+            ];
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat ditambahkan"
+            ];
+        }
+    });
+
+    Route::delete("/delete-kind-replacement-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_detail_replacement_plot = $request->id_detail_replacement_plot;
+        
+        $cekId = DB::select("SELECT * FROM yakopi_detail_replacement_plot WHERE id_detail_replacement_plot=?",[$id_detail_replacement_plot]);
+        if(count($cekId)>0){
+            $id_replacement_plot = $cekId[0]->id_replacement_plot;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_replacement_plot WHERE id_replacement_plot=?",[$id_replacement_plot]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_detail_replacement_plot WHERE id_detail_replacement_plot=?",[$id_detail_replacement_plot]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::post("/photo-replacement-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_replacement_plot;
+
+        $photo = DB::select("SELECT * FROM yakopi_replacement_plot_photo WHERE id_detail_replacement_plot=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$photo
+        ];
+    });
+
+    Route::post("/add-photo-replacement-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_replacement_plot;
+        $keterangan = $request->keterangan_replacement_plot_photo;
+        $link = $request->link_replacement_plot_photo;
+        $file = $request->file_replacement_plot_photo;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $photo = DB::insert("INSERT INTO yakopi_replacement_plot_photo (id_replacement_plot_photo,id_detail_replacement_plot,keterangan_replacement_plot_photo,link_replacement_plot_photo,file_replacement_plot_photo,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?)"
+        ,[null,$id,$keterangan,$link,$file,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil disimpan"
+        ];
+
+    });
+
+    Route::delete("/delete-photo-replacement-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_replacement_plot_photo;
+
+        $cekId = DB::select("SELECT * FROM yakopi_replacement_plot_photo WHERE id_replacement_plot_photo=?",[$id]);
+
+        if(count($cekId)>0){
+            $id1 = $cekId[0]->id_detail_replacement_plot;
+
+            $cekStatus1 = DB::select("SELECT * FROM yakopi_detail_replacement_plot WHERE id_detail_replacement_plot=?",[$id1]);
+
+            $id2 = $cekStatus1[0]->id_replacement_plot;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_replacement_plot WHERE id_replacement_plot=?",[$id2]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_replacement_plot_photo WHERE id_replacement_plot_photo=?",[$id]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::post("/video-replacement-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_replacement_plot;
+
+        $video = DB::select("SELECT * FROM yakopi_replacement_plot_video WHERE id_detail_replacement_plot=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$video
+        ];
+    });
+
+    Route::post("/add-video-replacement-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_replacement_plot;
+        $keterangan = $request->keterangan_replacement_plot_video;
+        $link = $request->link_replacement_plot_video;
+        $file = $request->file_replacement_plot_video;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $video = DB::insert("INSERT INTO yakopi_replacement_plot_video (id_replacement_plot_video,id_detail_replacement_plot,keterangan_replacement_plot_video,link_replacement_plot_video,file_replacement_plot_video,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?)"
+        ,[null,$id,$keterangan,$link,$file,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil disimpan"
+        ];
+
+    });
+
+    Route::delete("/delete-video-replacement-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_replacement_plot_video;
+
+        $cekId = DB::select("SELECT * FROM yakopi_replacement_plot_video WHERE id_replacement_plot_video=?",[$id]);
+
+        if(count($cekId)>0){
+            $id1 = $cekId[0]->id_detail_replacement_plot;
+
+            $cekStatus1 = DB::select("SELECT * FROM yakopi_detail_replacement_plot WHERE id_detail_replacement_plot=?",[$id1]);
+
+            $id2 = $cekStatus1[0]->id_replacement_plot;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_replacement_plot WHERE id_replacement_plot=?",[$id2]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_replacement_plot_video WHERE id_replacement_plot_video=?",[$id]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::post("/drone-replacement-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_replacement_plot;
+
+        $drone = DB::select("SELECT * FROM yakopi_replacement_plot_drone WHERE id_detail_replacement_plot=?",[$id]);
+        
+        return [
+            "success"=>true,
+            "data"=>$drone
+        ];
+
+    });
+
+    Route::post("/add-drone-replacement-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_replacement_plot;
+        $keterangan = $request->keterangan_replacement_plot_drone;
+        $link = $request->link_replacement_plot_drone;
+        $file = $request->file_replacement_plot_drone;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $drone = DB::insert("INSERT INTO yakopi_subtitute_plot_drone (id_replacement_plot_drone,id_detail_replacement_plot,keterangan_replacement_plot_drone,link_replacement_plot_drone,file_replacement_plot_drone,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?)"
+        ,[null,$id,$keterangan,$link,$file,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil disimpan"
+        ];
+
+    });
+
+    Route::delete("/delete-drone-replacement-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_replacement_plot_drone;
+
+        $cekId = DB::select("SELECT * FROM yakopi_replacement_plot_drone WHERE id_replacement_plot_drone=?",[$id]);
+
+        if(count($cekId)>0){
+            $id1 = $cekId[0]->id_detail_replacement_plot;
+
+            $cekStatus1 = DB::select("SELECT * FROM yakopi_detail_replacement_plot WHERE id_detail_replacement_plot=?",[$id1]);
+
+            $id2 = $cekStatus1[0]->id_replacement_plot;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_replacement_plot WHERE id_replacement_plot=?",[$id2]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_replacement_plot_drone WHERE id_replacement_plot_drone=?",[$id]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::delete("/delete-replacement-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_replacement_plot;
+
+        $cekId = DB::select("SELECT * FROM yakopi_replacement_plot WHERE id_replacement_plot=?",[$id]);
+
+        if(count($cekId)>0){
+            $id1 = $cekId[0]->id_replacement_plot;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_replacement_plot WHERE id_replacement_plot=?",[$id1]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_replacement_plot WHERE id_replacement_plot=?",[$id1]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    // REPLACEMENT PLOT END
 
 
 
