@@ -3470,6 +3470,494 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
     // REPLANTING ACTION END
 
+    // SUBTITUTE PLOT
+
+    Route::get("/subtitute-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_subtitute_plot;
+
+        $data = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_subtitute_plot AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        ");
+
+        return [
+            "success"=>true,
+            "data"=>$data
+        ];
+
+    });
+
+    Route::get("/planting-action-id", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_subtitute_plot;
+
+        $data = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_subtitute_plot AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        WHERE la.id_subtitute_plot=?
+        ",[$id]);
+
+        $detail = DB::select("
+        SELECT * FROM yakopi_detail_subtitute_plot WHERE id_subtitute_plot=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$data,
+            "detail"=>$detail
+        ];
+
+    });
+
+    Route::get("/history-subtitute-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $data = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_subtitute_plot AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        WHERE la.created_by=?
+        ",[$json->id_pengguna]);
+
+        return [
+            "success"=>true,
+            "data"=>$data
+        ];
+    });
+
+    Route::post("/subtitute-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_project = $request->project;
+        $id_provinces = $request->province;
+        $id_cities = $request->city;
+        $id_districts = $request->district;
+        $nama_desa = $request->village;
+        $nama_dusun = $request->backwood;
+        $lokasi_tanam = $request->lokasi_tanam;
+        $catatan_1 = $request->catatan_1;
+        $catatan_2 = $request->catatan_2;
+        $dilaporkan_oleh = $request->dilaporkan_oleh;
+        $ttd_pelapor = "";
+        $created_by = $json->id_pengguna;  
+        $created_time = date("Y-m-d H:i:s");
+        $status = 0;
+
+        $data = DB::insert(" INSERT INTO yakopi_subtitute_plot (id_project,id_provinces,id_cities,id_districts,nama_desa,nama_dusun,lokasi_tanam,catatan_1,catatan_2,dilaporkan_oleh,ttd_pelapor,created_by,created_time,status) 
+        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        [$id_project,$id_provinces,$id_cities,$id_districts,$nama_desa,$nama_dusun,$lokasi_tanam,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time,$status]);
+        if($data){
+            return [
+                "success"=>true,
+                "msg"=>"Data berhasil ditambahkan"
+            ];
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat ditambahkan"
+            ];
+        }
+    });
+
+    Route::post("/approve-subtitute-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_subtitute_plot;
+        $status = 1;
+
+        $approve = DB::update("UPDATE yakopi_subtitute_plot SET status=? WHERE id_subtitute_plot=?",[$status,$id]);
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil Mengkonfirmasi Data"
+        ];
+    });
+
+    Route::post("/reject-subtitute-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_subtitute_plot;
+        $status = 2;
+
+        $reject = DB::update("UPDATE yakopi_subtitute_plot SET status=? WHERE id_subtitute_plot=?",[$status,$id]);
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil Menolak Data"
+        ];
+    });
+
+    Route::post("/kind-subtitute-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_subtitute_plot;
+
+        $kind = DB::select("SELECT * FROM yakopi_detail_subtitute_plot WHERE id_detail_subtitute_plot=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$kind
+        ];
+    });
+
+    Route::post("/add-kind-subtitute-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_subtitute_plot = $request->id_subtitute_plot;
+        $plot_code = $request->plot_code;
+        $tinggi_tanaman = $request->tinggi_tanaman;
+        $umur_tanaman = $request->umur_tanaman;
+        $luas_plot = $request->luas_plot;
+        $lat_detail_subtitute_plot = $request->coordinate["latitude"];
+        $long_detail_subtitute_plot = $request->coordinate["longitude"];
+        $jenis_mangrove = $request->jenis_mangrove;
+        $jarak_tanaman = $request->jarak_tanaman;
+        $kematian = $request->kematian;
+        $penyebab_kematian = $request->penyebab_kematian;
+        $jenis_tanah = $request->jenis_tanah;
+        $status_tambak = $request->status_tambak;
+        $biodiversity = $request->biodiversity;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $kind = DB::insert(" INSERT INTO yakopi_detail_subtitute_plot (id_subtitute_plot,plot_code,tinggi_tanaman,umur_tanaman,luas_plot,lat_detail_subtitute_plot,long_detail_subtitute_plot,jenis_mangrove,jarak_tanaman,kematian,penyebab_kematian,jenis_tanah,status_tambak,biodiversity,created_by,created_time)
+        VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        [$id_subtitute_plot,$plot_code,$tinggi_tanaman,$umur_tanaman,$luas_plot,$lat_detail_subtitute_plot,$long_detail_subtitute_plot,$jenis_mangrove,$jarak_tanaman,$kematian,$penyebab_kematian,$jenis_tanah,$status_tambak,$biodiversity,$created_by,$created_time]);
+        if($kind){
+            return [
+                "success"=>true,
+                "msg"=>"Data berhasil ditambahkan"
+            ];
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat ditambahkan"
+            ];
+        }
+    });
+
+    Route::delete("/delete-kind-subtitute-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_subtitute_plot = $request->id_subtitute_plot;
+        
+        $cekId = DB::select("SELECT * FROM yakopi_detail_subtitute_plot WHERE id_subtitute_plot=?",[$id_subtitute_plot]);
+        if(count($cekId)>0){
+            $id_subtitute_plot = $cekId[0]->id_subtitute_plot;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_subtitute_plot WHERE id_subtitute_plot=?",[$id_subtitute_plot]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_detail_subtitute_plot WHERE id_subtitute_plot=?",[$id_subtitute_plot]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::post("/photo-subtitute-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_subtitute_plot;
+
+        $photo = DB::select("SELECT * FROM yakopi_subtitute_plot_photo WHERE id_detail_subtitute_plot=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$photo
+        ];
+    });
+
+    Route::post("/add-photo-subtitute-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_subtitute_plot;
+        $keterangan = $request->keterangan_subtitute_plot_photo;
+        $link = $request->link_subtitute_plot_photo;
+        $file = $request->file_subtitute_plot_photo;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $photo = DB::insert("INSERT INTO yakopi_subtitute_plot_photo (id_subtitute_plot_photo,id_detail_subtitute_plot,keterangan_subtitute_plot_photo,link_subtitute_plot_photo,file_subtitute_plot_photo,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?)"
+        ,[null,$id,$keterangan,$link,$file,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil disimpan"
+        ];
+
+    });
+
+    Route::delete("/delete-photo-subtitute-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_subtitute_plot_photo;
+
+        $cekId = DB::select("SELECT * FROM yakopi_subtitute_plot_photo WHERE id_subtitute_plot_photo=?",[$id]);
+
+        if(count($cekId)>0){
+            $id1 = $cekId[0]->id_detail_subtitute_plot;
+
+            $cekStatus1 = DB::select("SELECT * FROM yakopi_detail_subtitute_plot WHERE id_detail_subtitute_plot=?",[$id1]);
+
+            $id2 = $cekStatus1[0]->id_subtitute_plot;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_subtitute_plot WHERE id_subtitute_plot=?",[$id2]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_subtitute_plot_photo WHERE id_subtitute_plot_photo=?",[$id]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::post("/video-subtitute-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_subtitute_plot;
+
+        $video = DB::select("SELECT * FROM yakopi_subtitute_plot_video WHERE id_detail_subtitute_plot=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$video
+        ];
+    });
+
+    Route::post("/add-video-subtitute-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_subtitute_plot;
+        $keterangan = $request->keterangan_subtitute_plot_video;
+        $link = $request->link_subtitute_plot_video;
+        $file = $request->file_subtitute_plot_video;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $video = DB::insert("INSERT INTO yakopi_subtitute_plot_video (id_subtitute_plot_video,id_detail_subtitute_plot,keterangan_subtitute_plot_video,link_subtitute_plot_video,file_subtitute_plot_video,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?)"
+        ,[null,$id,$keterangan,$link,$file,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil disimpan"
+        ];
+
+    });
+
+    Route::delete("/delete-video-subtitute-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_subtitute_plot_video;
+
+        $cekId = DB::select("SELECT * FROM yakopi_subtitute_plot_video WHERE id_subtitute_plot_video=?",[$id]);
+
+        if(count($cekId)>0){
+            $id1 = $cekId[0]->id_detail_subtitute_plot;
+
+            $cekStatus1 = DB::select("SELECT * FROM yakopi_detail_subtitute_plot WHERE id_detail_subtitute_plot=?",[$id1]);
+
+            $id2 = $cekStatus1[0]->id_subtitute_plot;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_subtitute_plot WHERE id_subtitute_plot=?",[$id2]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_subtitute_plot_video WHERE id_subtitute_plot_video=?",[$id]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::post("/drone-subtitute-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_subtitute_plot;
+
+        $drone = DB::select("SELECT * FROM yakopi_subtitute_plot_drone WHERE id_detail_subtitute_plot=?",[$id]);
+        
+        return [
+            "success"=>true,
+            "data"=>$drone
+        ];
+
+    });
+
+    Route::post("/add-drone-subtitute-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_subtitute_plot;
+        $keterangan = $request->keterangan_subtitute_plot_drone;
+        $link = $request->link_subtitute_plot_drone;
+        $file = $request->file_subtitute_plot_drone;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $drone = DB::insert("INSERT INTO yakopi_subtitute_plot_drone (id_subtitute_plot_drone,id_detail_subtitute_plot,keterangan_subtitute_plot_drone,link_subtitute_plot_drone,file_subtitute_plot_drone,created_by,created_time)
+        VALUES (?,?,?,?,?,?,?)"
+        ,[null,$id,$keterangan,$link,$file,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil disimpan"
+        ];
+
+    });
+
+    Route::delete("/delete-drone-subtitute-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_subtitute_plot_drone;
+
+        $cekId = DB::select("SELECT * FROM yakopi_subtitute_plot_drone WHERE id_subtitute_plot_drone=?",[$id]);
+
+        if(count($cekId)>0){
+            $id1 = $cekId[0]->id_detail_subtitute_plot;
+
+            $cekStatus1 = DB::select("SELECT * FROM yakopi_detail_subtitute_plot WHERE id_detail_subtitute_plot=?",[$id1]);
+
+            $id2 = $cekStatus1[0]->id_subtitute_plot;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_subtitute_plot WHERE id_subtitute_plot=?",[$id2]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_subtitute_plot_drone WHERE id_subtitute_plot_drone=?",[$id]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    Route::delete("/delete-subtitute-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_subtitute_plot;
+
+        $cekId = DB::select("SELECT * FROM yakopi_subtitute_plot WHERE id_subtitute_plot=?",[$id]);
+
+        if(count($cekId)>0){
+            $id1 = $cekId[0]->id_subtitute_plot;
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_subtitute_plot WHERE id_subtitute_plot=?",[$id1]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_subtitute_plot WHERE id_subtitute_plot=?",[$id1]);
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+    });
+
+    // SUBTITUTE PLOT END
+
 
 
         
