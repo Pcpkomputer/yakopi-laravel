@@ -131,7 +131,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
     // PHOTO API START
 
     Route::get("/photo_restoration", function (Request $request){
-        $photo = DB::select("SELECT * FROM yakopi_photo_restoration LIMIT 10");
+        $photo = DB::select("SELECT * FROM yakopi_photo_restoration ORDER BY RAND() LIMIT 10");
         return [
             "success"=>true,
             "data"=>$photo
@@ -139,7 +139,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
     });
 
     Route::get("/photo_comdev", function (Request $request){
-        $photo = DB::select("SELECT * FROM yakopi_photo_comdev LIMIT 10");
+        $photo = DB::select("SELECT * FROM yakopi_photo_comdev ORDER BY RAND() LIMIT 10");
         return [
             "success"=>true,
             "data"=>$photo
@@ -147,7 +147,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
     });
 
     Route::get("/photo_research", function (Request $request){
-        $photo = DB::select("SELECT * FROM yakopi_photo_research LIMIT 10");
+        $photo = DB::select("SELECT * FROM yakopi_photo_research ORDER BY RAND() LIMIT 10");
         return [
             "success"=>true,
             "data"=>$photo
@@ -2986,7 +2986,6 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
 
-        $id = $request->id_planting_action;
 
         $planting = DB::select("
         SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_replanting AS la
@@ -3070,7 +3069,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $created_time = date("Y-m-d H:i:s");
         $status = 0;
 
-        $plantingAction = DB::insert(" INSERT INTO yakopi_replanting (id_planting_action,id_project,id_provinces,id_cities,id_districts,nama_desa,nama_dusun,jarak_tanam,lokasi_tanam,info_1,catatan_1,catatan_2,dilaporkan_oleh,ttd_pelapor,created_by,created_time,status)
+        $plantingAction = DB::insert(" INSERT INTO yakopi_replanting (id_replanting,id_project,id_provinces,id_cities,id_districts,nama_desa,nama_dusun,jarak_tanam,lokasi_tanam,info_1,catatan_1,catatan_2,dilaporkan_oleh,ttd_pelapor,created_by,created_time,status)
         VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         ",[$id_project,$id_provinces,$id_cities,$id_districts,$nama_desa,$nama_dusun,$jarak_tanam,$lokasi_tanam,$info_1,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time,$status]);
         if($plantingAction){
@@ -3157,7 +3156,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $created_time = date("Y-m-d H:i:s");
 
         $kindPlantingAction = DB::insert(" INSERT INTO yakopi_detail_replanting (id_detail_replanting,id_replanting,site_code,plot_code,area_plot,lat_detail_replanting,long_detail_replanting,kematian,sistem_tanam_1,sistem_tanam_2,r_mucronota,r_stylosa,r_apiculata,avicennia_spp,ceriops_spp,xylocarpus_spp,bruguiera_spp,sonneratia_spp,created_by,created_time)
-        VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         ",[$id_replanting,$site_code,$plot_code,$area_plot,$lat_detail_replanting,$long_detail_replanting,$kematian,$sistem_tanam_1,$sistem_tanam_2,$r_mucronota,$r_stylosa,$r_apiculata,$avicennia_spp,$ceriops_spp,$xylocarpus_spp,$bruguiera_spp,$sonneratia_spp,$created_by,$created_time]);
         if($kindPlantingAction){
             return [
@@ -3612,9 +3611,9 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
 
-        $id = $request->id_detail_subtitute_plot;
+        $id = $request->id_subtitute_plot;
 
-        $kind = DB::select("SELECT * FROM yakopi_detail_subtitute_plot WHERE id_detail_subtitute_plot=?",[$id]);
+        $kind = DB::select("SELECT * FROM yakopi_detail_subtitute_plot WHERE id_subtitute_plot=?",[$id]);
 
         return [
             "success"=>true,
@@ -3644,7 +3643,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $created_by = $json->id_pengguna;
         $created_time = date("Y-m-d H:i:s");
 
-        $kind = DB::insert(" INSERT INTO yakopi_detail_subtitute_plot (id_subtitute_plot,plot_code,tinggi_tanaman,umur_tanaman,luas_plot,lat_detail_subtitute_plot,long_detail_subtitute_plot,jenis_mangrove,jarak_tanaman,kematian,penyebab_kematian,jenis_tanah,status_tambak,biodiversity,created_by,created_time)
+        $kind = DB::insert(" INSERT INTO yakopi_detail_subtitute_plot (id_detail_subtitute_plot,id_subtitute_plot,plot_code,tinggi_tanaman,umur_tanaman,luas_plot,lat_detail_subtitute_plot,long_detail_subtitute_plot,jenis_mangrove,jarak_tanaman,kematian,penyebab_kematian,jenis_tanah,status_tambak,biodiversity,created_by,created_time)
         VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
         [$id_subtitute_plot,$plot_code,$tinggi_tanaman,$umur_tanaman,$luas_plot,$lat_detail_subtitute_plot,$long_detail_subtitute_plot,$jenis_mangrove,$jarak_tanaman,$kematian,$penyebab_kematian,$jenis_tanah,$status_tambak,$biodiversity,$created_by,$created_time]);
         if($kind){
@@ -4099,9 +4098,9 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
 
-        $id = $request->id_detail_replacement_plot;
+        $id = $request->id_replacement_plot;
 
-        $kind = DB::select("SELECT * FROM yakopi_detail_replacement_plot WHERE id_detail_replacement_plot=?",[$id]);
+        $kind = DB::select("SELECT * FROM yakopi_detail_replacement_plot WHERE id_replacement_plot=?",[$id]);
 
         return [
             "success"=>true,
@@ -4362,9 +4361,9 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $created_by = $json->id_pengguna;
         $created_time = date("Y-m-d H:i:s");
 
-        $drone = DB::insert("INSERT INTO yakopi_subtitute_plot_drone (id_replacement_plot_drone,id_detail_replacement_plot,keterangan_replacement_plot_drone,link_replacement_plot_drone,file_replacement_plot_drone,created_by,created_time)
-        VALUES (?,?,?,?,?,?,?)"
-        ,[null,$id,$keterangan,$link,$file,$created_by,$created_time]);
+        $drone = DB::insert("INSERT INTO yakopi_replacement_plot_drone (id_replacement_plot_drone,id_detail_replacement_plot,keterangan_replacement_plot_drone,link_replacement_plot_drone,file_replacement_plot_drone,created_by,created_time)
+        VALUES (null,?,?,?,?,?,?)"
+        ,[$id,$keterangan,$link,$file,$created_by,$created_time]);
 
         return [
             "success"=>true,
