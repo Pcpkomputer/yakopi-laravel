@@ -5081,6 +5081,962 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
     // GROWTH RESEARCH END
 
+    // DIVERSITY FAUNA START
+
+    Route::get("/research/diversityFauna", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+        
+        $data = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_diversity_fauna AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        ");
+
+        return [
+            "success"=>true,
+            "data"=>$data
+        ];
+    });
+
+    Route::get("/research/diversityFauna/{id}", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id;
+
+        $data = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_diversity_fauna AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        WHERE la.id_diversity_fauna	=?",[$id]);
+
+        $detail = DB::select("SELECT * FROM yakopi_detail_diveristy_fauna WHERE id_diversity_fauna=?",[$data[0]->id_diversity_fauna]);
+
+        return [
+            "success"=>true,
+            "data"=>$data,
+            "detail"=>$detail
+        ];
+
+    });
+
+    Route::post("/research/diversityFauna/add", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_project = $request->project;
+        $id_provinces = $request->province;
+        $id_cities = $request->city;
+        $id_districts = $request->district;
+        $latitude = $request->coordinate["latitude"];
+        $longitude = $request->coordinate["longitude"];
+        $nama_desa = $request->village;
+        $nama_dusun = $request->backwood;
+        $site_code = $request->site_code;
+        $plot_code = $request->plot_code;
+        $area = $request->area;
+        $jumlah = $request->jumlah;
+        $monitoring = $request->monitoring;
+        $catatan_1 = $request->catatan_1;
+        $catatan_2 = $request->catatan_2;
+        $dilaporkan_oleh = $request->dilaporkan_oleh;
+        $ttd_pelapor = '';
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+        $status = "0";
+
+        $insert = DB::insert(" INSERT INTO yakopi_diversity_fauna (id_diversity_fauna,id_project,id_provinces,id_cities,id_districts,latitude,longitude,nama_desa,nama_dusun,site_code,plot_code,area,jumlah,monitoring,catatan_1,catatan_2,dilaporkan_oleh,ttd_pelapor,created_by,created_time,status)
+        VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        [$id_project,$id_provinces,$id_cities,$id_districts,$latitude,$longitude,$nama_desa,$nama_dusun,$site_code,$plot_code,$area,$jumlah,$monitoring,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time,$status]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil ditambahkan"
+        ];
+
+    });
+
+    Route::delete("/research/diversityFauna/delete", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_diversity_fauna;
+
+        $data = DB::select("SELECT * FROM yakopi_diversity_fauna WHERE id_diversity_fauna=?",[$id]);
+        
+        if($data[0]->status=="0"){
+            $delete = DB::delete("DELETE FROM yakopi_diversity_fauna WHERE id_diversity_fauna=?",[$id]);
+
+            if($delete){
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+
+    });
+
+    Route::get("/research/dataDiversityFauna", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_diversity_fauna;
+
+        $data = DB::select(" SELECT * FROM yakopi_detail_diveristy_fauna WHERE id_diversity_fauna=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$data
+        ];
+
+    });
+
+    Route::post("/research/diversityFauna/addDetail", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_diversity_fauna = $request->id_diversity_fauna;
+        $latitude_diversity_fauna = $request->coordinate["latitude"];
+        $longitude_diversity_fauna = $request->coordinate["longitude"];
+        $jenis_hewan = $request->jenis_hewan;
+        $deskripsi = $request->deskripsi;
+        $jumlah = $request->jumlah;
+        $keterangan = $request->keterangan;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $insert = DB::insert(" INSERT INTO yakopi_detail_diveristy_fauna (id_detail_diversity_fauna,id_diversity_fauna,latitude_diversity_fauna,longitude_diversity_fauna,jenis_hewan,deskripsi,jumlah,keterangan,created_by,created_time)
+        VALUES (NULL,?,?,?,?,?,?,?,?,?)",
+        [$id_diversity_fauna,$latitude_diversity_fauna,$longitude_diversity_fauna,$jenis_hewan,$deskripsi,$jumlah,$keterangan,$created_by,$created_time]);
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil ditambahkan"
+        ];
+    });
+
+    Route::delete("/research/diversityFauna/deleteDetail", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_diversity_fauna;
+
+        $cek = DB::select("SELECT * FROM yakopi_detail_diveristy_fauna WHERE id_detail_diversity_fauna=?",[$id]);
+
+        if(count($cek)>0){
+            $cekStatus = DB::select("SELECT * FROM yakopi_diversity_fauna WHERE id_diversity_fauna=?",[$cek[0]->id_diversity_fauna]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_detail_diveristy_fauna WHERE id_detail_diversity_fauna=?",[$id]);
+
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus karena sudah dilaporkan"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak ditemukan"
+            ];
+        }
+    });
+
+    Route::get("/research/photoDataDiversityFauna", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_diversity_fauna;
+
+        $data = DB::select("SELECT * FROM yakopi_diversity_fauna_photo WHERE id_detail_diversity_fauna=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$data
+        ];
+
+    });
+
+    Route::post("/research/diversityFauna/addPhoto", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_detail_diversity_fauna = $request->id_detail_diversity_fauna;
+        $link_diversity_fauna = $request->link_diversity_fauna;
+        $file_diversity_fauna = $request->file_diversity_fauna;
+        $keterangan_diversity_fauna = $request->keterangan_diversity_fauna;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $insert = DB::insert(" INSERT INTO yakopi_diversity_fauna_photo (id_diversity_fauna_photo,id_detail_diversity_fauna,link_diversity_fauna,file_diversity_fauna,keterangan_diversity_fauna,created_by,created_time)
+        VALUES (NULL,?,?,?,?,?,?)",
+        [$id_detail_diversity_fauna,$link_diversity_fauna,$file_diversity_fauna,$keterangan_diversity_fauna,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil ditambahkan"
+        ];
+
+    });
+
+    Route::delete("/research/diversityFauna/deletePhoto", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_diversity_fauna_photo;
+
+        $cek = DB::select("SELECT * FROM yakopi_diversity_fauna_photo WHERE id_diversity_fauna_photo=?",[$id]);
+
+        if(count($cek)>0){
+            $cekDetail = DB::select("SELECT * FROM yakopi_detail_diveristy_fauna WHERE id_detail_diversity_fauna=?",[$cek[0]->id_detail_diversity_fauna]);
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_diversity_fauna WHERE id_diversity_fauna=?",[$cekDetail[0]->id_diversity_fauna]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_diversity_fauna_photo WHERE id_diversity_fauna_photo=?",[$id]);
+
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus karena sudah dilaporkan"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak ditemukan"
+            ];
+        }
+    });
+
+    // DIVERSITY FAUNA END
+
+    // DIVERSITY FLORA START
+
+    Route::get("/research/diversityFlora", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+        
+        $data = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_diversity_flora AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        ");
+
+        return [
+            "success"=>true,
+            "data"=>$data
+        ];
+    });
+
+    Route::get("/research/diversityFlora/{id}", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id;
+
+        $data = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_diversity_flora AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        WHERE la.id_diversity_flora	=?",[$id]);
+
+        $detail = DB::select("SELECT * FROM yakopi_detail_diveristy_flora WHERE id_diversity_flora=?",[$data[0]->id_diversity_flora]);
+
+        return [
+            "success"=>true,
+            "data"=>$data,
+            "detail"=>$detail
+        ];
+
+    });
+
+    Route::post("/research/diversityFlora/add", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_project = $request->project;
+        $id_provinces = $request->province;
+        $id_cities = $request->city;
+        $id_districts = $request->district;
+        $latitude = $request->coordinate["latitude"];
+        $longitude = $request->coordinate["longitude"];
+        $nama_desa = $request->village;
+        $nama_dusun = $request->backwood;
+        $site_code = $request->site_code;
+        $plot_code = $request->plot_code;
+        $area = $request->area;
+        $jumlah = $request->jumlah;
+        $monitoring = $request->monitoring;
+        $catatan_1 = $request->catatan_1;
+        $catatan_2 = $request->catatan_2;
+        $dilaporkan_oleh = $request->dilaporkan_oleh;
+        $ttd_pelapor = '';
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+        $status = "0";
+
+        $insert = DB::insert(" INSERT INTO yakopi_diversity_flora (id_diversity_flora,id_project,id_provinces,id_cities,id_districts,latitude,longitude,nama_desa,nama_dusun,site_code,plot_code,area,jumlah,monitoring,catatan_1,catatan_2,dilaporkan_oleh,ttd_pelapor,created_by,created_time,status)
+        VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        [$id_project,$id_provinces,$id_cities,$id_districts,$latitude,$longitude,$nama_desa,$nama_dusun,$site_code,$plot_code,$area,$jumlah,$monitoring,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time,$status]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil ditambahkan"
+        ];
+
+    });
+
+    Route::delete("/research/diversityFlora/delete", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_diversity_flora;
+
+        $data = DB::select("SELECT * FROM yakopi_diversity_flora WHERE id_diversity_flora=?",[$id]);
+        
+        if($data[0]->status=="0"){
+            $delete = DB::delete("DELETE FROM yakopi_diversity_flora WHERE id_diversity_flora=?",[$id]);
+
+            if($delete){
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+
+    });
+
+    Route::get("/research/dataDiversityFlora", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_diversity_flora;
+
+        $data = DB::select(" SELECT * FROM yakopi_detail_diveristy_flora WHERE id_diversity_flora=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$data
+        ];
+
+    });
+
+    Route::post("/research/diversityFlora/addDetail", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_diversity_flora = $request->id_diversity_flora;
+        $latitude_diversity_flora = $request->coordinate["latitude"];
+        $longitude_diversity_flora = $request->coordinate["longitude"];
+        $jenis_tumbuhan = $request->jenis_tumbuhan;
+        $deskripsi = $request->deskripsi;
+        $jumlah = $request->jumlah;
+        $keterangan = $request->keterangan;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $insert = DB::insert(" INSERT INTO yakopi_detail_diveristy_flora (id_detail_diversity_flora,id_diversity_flora,latitude_diversity_flora,longitude_diversity_flora,jenis_tumbuhan,deskripsi,jumlah,keterangan,created_by,created_time)
+        VALUES (NULL,?,?,?,?,?,?,?,?,?)",
+        [$id_diversity_flora,$latitude_diversity_flora,$longitude_diversity_flora,$jenis_tumbuhan,$deskripsi,$jumlah,$keterangan,$created_by,$created_time]);
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil ditambahkan"
+        ];
+    });
+
+    Route::delete("/research/diversityFlora/deleteDetail", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_diversity_flora;
+
+        $cek = DB::select("SELECT * FROM yakopi_detail_diveristy_flora WHERE id_detail_diversity_flora=?",[$id]);
+
+        if(count($cek)>0){
+            $cekStatus = DB::select("SELECT * FROM yakopi_diversity_flora WHERE id_diversity_flora=?",[$cek[0]->id_diversity_flora]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_detail_diveristy_flora WHERE id_detail_diversity_flora=?",[$id]);
+
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus karena sudah dilaporkan"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak ditemukan"
+            ];
+        }
+    });
+
+    Route::get("/research/photoDataDiversityFlora", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_diversity_flora;
+
+        $data = DB::select("SELECT * FROM yakopi_diversity_flora_photo WHERE id_detail_diversity_flora=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$data
+        ];
+
+    });
+
+    Route::post("/research/diversityFlora/addPhoto", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_detail_diversity_flora = $request->id_detail_diversity_flora;
+        $link_diversity_flora = $request->link_diversity_flora;
+        $file_diversity_flora = $request->file_diversity_flora;
+        $keterangan_diversity_flora = $request->keterangan_diversity_flora;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $insert = DB::insert(" INSERT INTO yakopi_diversity_flora_photo (id_diversity_flora_photo,id_detail_diversity_flora,link_diversity_flora,file_diversity_flora,keterangan_diversity_flora,created_by,created_time)
+        VALUES (NULL,?,?,?,?,?,?)",
+        [$id_detail_diversity_flora,$link_diversity_flora,$file_diversity_flora,$keterangan_diversity_flora,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil ditambahkan"
+        ];
+
+    });
+
+    Route::delete("/research/diversityFlora/deletePhoto", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_diversity_flora_photo;
+
+        $cek = DB::select("SELECT * FROM yakopi_diversity_flora_photo WHERE id_diversity_flora_photo=?",[$id]);
+
+        if(count($cek)>0){
+            $cekDetail = DB::select("SELECT * FROM yakopi_detail_diveristy_flora WHERE id_detail_diversity_flora=?",[$cek[0]->id_detail_diversity_flora]);
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_diversity_flora WHERE id_diversity_flora=?",[$cekDetail[0]->id_diversity_flora]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_diversity_flora_photo WHERE id_diversity_flora_photo=?",[$id]);
+
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus karena sudah dilaporkan"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak ditemukan"
+            ];
+        }
+    });
+
+    // DIVERSITY FLORA END
+
+    // HAMA START
+
+    Route::get("/research/hama", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+        
+        $data = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_hama AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        ");
+
+        return [
+            "success"=>true,
+            "data"=>$data
+        ];
+    });
+
+    Route::get("/research/hama", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_hama;
+
+        $data = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_hama AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        WHERE la.id_hama=?",[$id_hama]);
+
+        $detail = DB::select("SELECT * FROM yakopi_detail_hama WHERE id_hama=?",[$data[0]->id_hama]);
+
+        return [
+            "success"=>true,
+            "data"=>$data,
+            "detail"=>$detail
+        ];
+
+    });
+
+    Route::post("/research/hama/add", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_project = $request->project;
+        $id_provinces = $request->province;
+        $id_cities = $request->city;
+        $id_districts = $request->district;
+        $latitude = $request->coordinate["latitude"];
+        $longitude = $request->coordinate["longitude"];
+        $nama_desa = $request->village;
+        $nama_dusun = $request->backwood;
+        $site_code = $request->site_code;
+        $plot_code = $request->plot_code;
+        $area = $request->area;
+        $jumlah = $request->jumlah;
+        $monitoring = $request->monitoring;
+        $catatan_1 = $request->catatan_1;
+        $catatan_2 = $request->catatan_2;
+        $dilaporkan_oleh = $request->dilaporkan_oleh;
+        $ttd_pelapor = '';
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+        $status = "0";
+
+        $insert = DB::insert(" INSERT INTO yakopi_hama (id_hama,id_project,id_provinces,id_cities,id_districts,latitude,longitude,nama_desa,nama_dusun,site_code,plot_code,area,jumlah,monitoring,catatan_1,catatan_2,dilaporkan_oleh,ttd_pelapor,created_by,created_time,status)
+        VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        [$id_project,$id_provinces,$id_cities,$id_districts,$latitude,$longitude,$nama_desa,$nama_dusun,$site_code,$plot_code,$area,$jumlah,$monitoring,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time,$status]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil ditambahkan"
+        ];
+
+    });
+
+    Route::delete("/research/hama/delete", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_hama;
+
+        $data = DB::select("SELECT * FROM yakopi_hama WHERE id_hama=?",[$id]);
+        
+        if($data[0]->status=="0"){
+            $delete = DB::delete("DELETE FROM yakopi_hama WHERE id_hama=?",[$id]);
+
+            if($delete){
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak dapat dihapus"
+            ];
+        }
+
+    });
+
+    Route::get("/research/detailHama", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_hama;
+
+        $data = DB::select(" SELECT * FROM yakopi_detail_hama WHERE id_detail_hama=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$data
+        ];
+
+    });
+
+    Route::post("/research/hama/addDetail", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_detail_hama = $request->id_detail_hama;
+        $latitude_hama = $request->coordinate["latitude"];
+        $longtitude_hama = $request->coordinate["longitude"];
+        $jenis_hama = $request->jenis_hama;
+        $deskripsi = $request->deskripsi;
+        $jumlah = $request->jumlah;
+        $keterangan = $request->keterangan;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $insert = DB::insert(" INSERT INTO yakopi_detail_hama (id_detail_hama,id_hama,latitude_hama,longtitude_hama,jenis_hama,deskripsi,jumlah,keterangan,created_by,created_time)
+        VALUES (NULL,?,?,?,?,?,?,?,?,?)",
+        [$id_detail_hama,$latitude_hama,$longtitude_hama,$jenis_hama,$deskripsi,$jumlah,$keterangan,$created_by,$created_time]);
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil ditambahkan"
+        ];
+    });
+
+    Route::delete("/research/hama/deleteDetail", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_hama;
+
+        $cek = DB::select("SELECT * FROM yakopi_detail_hama WHERE id_detail_hama=?",[$id]);
+
+        if(count($cek)>0){
+            $cekStatus = DB::select("SELECT * FROM yakopi_hama WHERE id_hama=?",[$cek[0]->id_hama]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_detail_hama WHERE id_detail_hama=?",[$id]);
+
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus karena sudah dilaporkan"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak ditemukan"
+            ];
+        }
+    });
+
+    Route::get("/research/photoDataHama", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_hama;
+
+        $data = DB::select("SELECT * FROM yakopi_hama_photo WHERE id_detail_hama=?",[$id]);
+
+        return [
+            "success"=>true,
+            "data"=>$data
+        ];
+
+    });
+
+    Route::post("/research/hama/addPhoto", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_detail_hama = $request->id_detail_hama;
+        $link_hama = $request->link_hama;
+        $file_hama = $request->file_hama;
+        $keterangan_hama = $request->keterangan_hama;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+        $insert = DB::insert(" INSERT INTO yakopi_diversity_flora_photo (id_hama_photo,id_detail_hama,link_hama,file_hama,keterangan_hama,created_by,created_time)
+        VALUES (NULL,?,?,?,?,?,?)",
+        [$id_detail_hama,$link_hama,$file_hama,$keterangan_hama,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil ditambahkan"
+        ];
+
+    });
+
+    Route::delete("/research/hama/deletePhoto", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_hama_photo;
+
+        $cek = DB::select("SELECT * FROM yakopi_hama_photo WHERE id_hama_photo=?",[$id]);
+
+        if(count($cek)>0){
+            $cekDetail = DB::select("SELECT * FROM yakopi_detail_hama WHERE id_detail_hama=?",[$cek[0]->id_detail_hama]);
+
+            $cekStatus = DB::select("SELECT * FROM yakopi_hama WHERE id_hama=?",[$cekDetail[0]->id_hama]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_hama_photo WHERE id_hama_photo=?",[$id]);
+
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus karena sudah dilaporkan"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak ditemukan"
+            ];
+        }
+    });
+
+    // HAMA END
+
+    // FISKIM START
+
+    Route::get("/research/fiskim", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $data = DB::select("SELECT * FROM yakopi_fiskim");
+
+        return [
+            "success"=>true,
+            "data"=>$data
+        ];
+    });
+
+    Route::post("/research/fiskim/add", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_project = $request->project;
+        $id_provinces = $request->province;
+        $id_cities = $request->city;
+        $id_districts = $request->district;
+        $latitude = $request->coordinate["latitude"];
+        $longitude = $request->coordinate["longitude"];
+        $nama_desa = $request->village;
+        $nama_dusun = $request->backwood;
+        $site_code = $request->site_code;
+        $plot_code = $request->plot_code;
+        $area = $request->area;
+        $jumlah = $request->jumlah;
+        $monitoring = $request->monitoring;
+        $catatan_1 = $request->catatan_1;
+        $catatan_2 = $request->catatan_2;
+        $dilaporkan_oleh = $request->dilaporkan_oleh;
+        $ttd_pelapor = '';
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+        $status = "0";
+
+        $insert = DB::insert(" INSERT INTO yakopi_fiskim (id_fiskim,id_project,id_provinces,id_cities,id_districts,latitude,longitude,nama_desa,nama_dusun,site_code,plot_code,area,jumlah,monitoring,catatan_1,catatan_2,dilaporkan_oleh,ttd_pelapor,created_by,created_time,status)
+        VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        [$id_project,$id_provinces,$id_cities,$id_districts,$latitude,$longitude,$nama_desa,$nama_dusun,$site_code,$plot_code,$area,$jumlah,$monitoring,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time,$status]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil ditambahkan"
+        ];
+
+    });
+
+    Route::delete("/research/fiskim/delete", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_fiskim;
+
+        $cek = DB::select("SELECT * FROM yakopi_fiskim WHERE id_fiskim=?",[$id]);
+
+        if(count($cek)>0){
+            $cekStatus = DB::select("SELECT * FROM yakopi_fiskim WHERE id_fiskim=?",[$cek[0]->id_fiskim]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_fiskim WHERE id_fiskim=?",[$id]);
+
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus karena sudah dilaporkan"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak ditemukan"
+            ];
+        }
+    });
+
+    Route::get("/research/detailFiskim", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $data = DB::select("SELECT * FROM yakopi_detail_fiskim");
+
+        return [
+            "success"=>true,
+            "data"=>$data
+        ];
+    });
+
+    Route::post("/research/detailFiskim/add", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id_fiskim = $request->id_fiskim;
+        $waktu = $request->waktu;
+        $substrat = $request->substrat;
+        $suhu = $request->suhu;
+        $ph = $request->ph;
+        $salinitas = $request->salinitas;
+        $intensitas_cahaya = $request->intensitas_cahaya;
+        $kelembaban = $request->kelembaban;
+        $dissolved_oksigen = $request->dissolved_oksigen;
+        $created_by = $json->id_pengguna;
+        $created_time = date("Y-m-d H:i:s");
+
+
+        $insert = DB::insert(" INSERT INTO yakopi_detail_fiskim (id_detail_fiskim,id_fiskim,waktu,substrat,suhu,ph,salinitas,intensitas_cahaya,kelembaban,dissolved_oksigen,created_by,created_time)
+        VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?)",
+        [$id_fiskim,$waktu,$substrat,$suhu,$ph,$salinitas,$intensitas_cahaya,$kelembaban,$dissolved_oksigen,$created_by,$created_time]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Data berhasil ditambahkan"
+        ];
+
+    });
+
+    Route::delete("/research/detailFiskim/delete", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_detail_fiskim;
+
+        $cek = DB::select("SELECT * FROM yakopi_detail_fiskim WHERE id_detail_fiskim=?",[$id]);
+
+        if(count($cek)>0){
+            $cekStatus = DB::select("SELECT * FROM yakopi_fiskim WHERE id_fiskim=?",[$cek[0]->id_fiskim]);
+
+            if($cekStatus[0]->status=="0"){
+                $delete = DB::delete("DELETE FROM yakopi_detail_fiskim WHERE id_detail_fiskim=?",[$id]);
+
+                return [
+                    "success"=>true,
+                    "msg"=>"Data berhasil dihapus"
+                ];
+            }else{
+                return [
+                    "success"=>false,
+                    "msg"=>"Data tidak dapat dihapus karena sudah dilaporkan"
+                ];
+            }
+        }else{
+            return [
+                "success"=>false,
+                "msg"=>"Data tidak ditemukan"
+            ];
+        }
+    });
+
+
+
+
+
 
 
 
