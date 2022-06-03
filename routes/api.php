@@ -4834,31 +4834,6 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         ];
     });
 
-    Route::get("/research/growthResearch/{id}", function(Request $request){
-        $token = $request->bearerToken();
-        $parsed = Crypt::decryptString($token);
-        $json = json_decode($parsed);
-
-        $id = $request->id;
-
-        $data = DB::select("
-        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_growth_research AS la
-        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
-        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
-        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
-        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
-        WHERE la.id_growth_research=?",[$id]);
-
-        $detail = DB::select("SELECT * FROM yakopi_detail_growth_research WHERE id_growth_research=?",[$data[0]->id_growth_research]);
-
-        return [
-            "success"=>true,
-            "data"=>$data,
-            "detail"=>$detail
-        ];
-
-    });
-
     Route::post("/research/growthResearch/add", function(Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
@@ -4869,13 +4844,13 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $id_cities = $request->city;
         $id_districts = $request->district;
         $lat_growth_research = $request->coordinate["latitude"];
-        $long_growth_research = $request->coordinate["longitude"];
+        $long_growth_research =$request->coordinate["longitude"];
         $nama_desa = $request->village;
         $nama_dusun = $request->backwood;
         $site_code = $request->site_code;
         $plot_code = $request->plot_code;
         $area = $request->area;
-        $spesies = $request->species;
+        $spesies = $request->spesies;
         $jumlah = $request->jumlah;
         $monitoring_ke = $request->monitoring_ke;
         $catatan_1 = $request->catatan_1;
@@ -4887,9 +4862,9 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $status = "0";
 
         $insert = DB::insert(" INSERT INTO yakopi_growth_research 
-        (id_growth_research,id_project,id_provinces,id_cities,id_districts,lat_growth_research,long_growth_research,nama_desa,nama_dusun,site_code,plot_code,area,spesies,jumlah,monitoring_ke,catatan_1,catatan_2,dilaporkan_oleh,ttd_pelapor,created_by,created_time,status) 
-        VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)"
-        ,[$id_project,$id_provinces,$id_cities,$id_districts,$lat_growth_research,$long_growth_research,$nama_desa,$nama_dusun,$site_code,$plot_code,$area,$spesies,$jumlah,$monitoring_ke,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time,$status]);
+        (id_growth_research,id_project,id_provinces,id_cities,id_districts,nama_desa,nama_dusun,lat_growth_research,long_growth_research,site_code,plot_code,area,spesies,jumlah,monitoring_ke,catatan_1,catatan_2,dilaporkan_oleh,ttd_pelapor,created_by,created_time,status)
+        VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        [$id_project,$id_provinces,$id_cities,$id_districts,$lat_growth_research,$long_growth_research,$nama_desa,$nama_dusun,$site_code,$plot_code,$area,$spesies,$jumlah,$monitoring_ke,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time,$status]);
 
         return [
             "success"=>true,
@@ -4898,7 +4873,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
     });
 
-    Route::delete("/research/growthResearch/delete/{id}", function(Request $request){
+    Route::delete("/research/growthResearch/delete", function(Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
@@ -4930,7 +4905,23 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
     });
 
-    Route::get("/research/dataGrowthResearch/{id}", function(Request $request){
+    Route::post("/research/approve-growth-research", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_growth_research;
+        $status = 1;
+
+        $data = DB::update("UPDATE yakopi_growth_research SET status=? WHERE id_growth_research=?",[$status,$id]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil mengkonfirmasi land assessment"
+        ];
+    });
+
+    Route::post("/research/dataGrowthResearch", function(Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
@@ -4963,7 +4954,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
         $insert = DB::insert(" INSERT INTO yakopi_detail_growth_research
         (id_detail_growth_research,id_growth_research,no_tagging,tinggi,diameter,jumlah_daun,jumlah_percabangan,keterangan,created_by,created_time)
-        VALUES (null,?,?,?,?,?,?,?,?,?,?)"
+        VALUES (null,?,?,?,?,?,?,?,?,?)"
         ,[$id_growth_research,$no_tagging,$tinggi,$diameter,$jumlah_daun,$jumlah_percabangan,$keterangan,$created_by,$created_time]);
 
         return [
@@ -4972,7 +4963,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         ];
     });
 
-    Route::delete("/research/growthResearch/deleteDetail/{id}", function(Request $request){
+    Route::delete("/research/growthResearch/deleteDetail", function(Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
@@ -5005,14 +4996,14 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         }
     });
 
-    Route::get("/research/photoDataGrowthResearch/{id}", function(Request $request){
+    Route::post("/research/photoDataGrowthResearch", function(Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
 
         $id = $request->id;
 
-        $data = DB::select("SELECT * FROM yakopi_photo_growth_research WHERE id_detail_growth_research=?",[$id]);
+        $data = DB::select("SELECT * FROM yakopi_growth_research_photo WHERE id_detail_growth_research=?",[$id]);
 
         return [
             "success"=>true,
@@ -5032,9 +5023,9 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $created_by = $json->id_pengguna;
         $created_time = date("Y-m-d H:i:s");
 
-        $insert = DB::insert(" INSERT INTO yakopi_growth_research_photo 
-        (id_growth_research_photo,id_detail_growth_research,link_growth_research_photo,file_growth_research_photo,created_by,created_time)
-        VALUES (null,?,?,?,?,?,?)"
+        $insert = DB::insert("INSERT INTO yakopi_growth_research_photo 
+        (id_detail_growth_research,link_growth_research_photo,file_growth_research_photo,created_by,created_time)
+        VALUES (?,?,?,?,?)"
         ,[$id_detail_growth_research,$link_growth_research_photo,$file_growth_research_photo,$created_by,$created_time]);
 
         return [
@@ -5044,7 +5035,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
     });
 
-    Route::delete("/research/growthResearch/deletePhoto/{id}", function(Request $request){
+    Route::delete("/research/growthResearch/deletePhoto", function(Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
@@ -5117,7 +5108,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
         WHERE la.id_diversity_fauna	=?",[$id]);
 
-        $detail = DB::select("SELECT * FROM yakopi_detail_diveristy_fauna WHERE id_diversity_fauna=?",[$data[0]->id_diversity_fauna]);
+        $detail = DB::select("SELECT * FROM yakopi_detail_diversity_fauna WHERE id_diversity_fauna=?",[$data[0]->id_diversity_fauna]);
 
         return [
             "success"=>true,
@@ -5125,6 +5116,22 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
             "detail"=>$detail
         ];
 
+    });
+
+    Route::post("/research/approve-diversityFauna", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_diversity_fauna;
+        $status = 1;
+
+        $data = DB::update("UPDATE yakopi_diversity_fauna SET status=? WHERE id_diversity_fauna=?",[$status,$id]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil mengkonfirmasi land assessment"
+        ];
     });
 
     Route::post("/research/diversityFauna/add", function(Request $request){
@@ -5143,19 +5150,18 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $site_code = $request->site_code;
         $plot_code = $request->plot_code;
         $area = $request->area;
-        $jumlah = $request->jumlah;
         $monitoring = $request->monitoring;
         $catatan_1 = $request->catatan_1;
         $catatan_2 = $request->catatan_2;
         $dilaporkan_oleh = $request->dilaporkan_oleh;
-        $ttd_pelapor = '';
+        $ttd_surveyor = '';
         $created_by = $json->id_pengguna;
         $created_time = date("Y-m-d H:i:s");
         $status = "0";
 
-        $insert = DB::insert(" INSERT INTO yakopi_diversity_fauna (id_diversity_fauna,id_project,id_provinces,id_cities,id_districts,latitude,longitude,nama_desa,nama_dusun,site_code,plot_code,area,jumlah,monitoring,catatan_1,catatan_2,dilaporkan_oleh,ttd_pelapor,created_by,created_time,status)
-        VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-        [$id_project,$id_provinces,$id_cities,$id_districts,$latitude,$longitude,$nama_desa,$nama_dusun,$site_code,$plot_code,$area,$jumlah,$monitoring,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time,$status]);
+        $insert = DB::insert(" INSERT INTO yakopi_diversity_fauna (id_diversity_fauna,id_project,id_provinces,id_cities,id_districts,latitude,longitude,nama_desa,nama_dusun,site_code,plot_code,area,monitoring,catatan_1,catatan_2,dilaporkan_oleh,ttd_surveyor,created_by,created_time,status)
+        VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        [$id_project,$id_provinces,$id_cities,$id_districts,$latitude,$longitude,$nama_desa,$nama_dusun,$site_code,$plot_code,$area,$monitoring,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_surveyor,$created_by,$created_time,$status]);
 
         return [
             "success"=>true,
@@ -5196,14 +5202,14 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
     });
 
-    Route::get("/research/dataDiversityFauna", function(Request $request){
+    Route::post("/research/dataDiversityFauna", function(Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
 
         $id = $request->id_diversity_fauna;
 
-        $data = DB::select(" SELECT * FROM yakopi_detail_diveristy_fauna WHERE id_diversity_fauna=?",[$id]);
+        $data = DB::select(" SELECT * FROM yakopi_detail_diversity_fauna WHERE id_diversity_fauna=?",[$id]);
 
         return [
             "success"=>true,
@@ -5227,7 +5233,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $created_by = $json->id_pengguna;
         $created_time = date("Y-m-d H:i:s");
 
-        $insert = DB::insert(" INSERT INTO yakopi_detail_diveristy_fauna (id_detail_diversity_fauna,id_diversity_fauna,latitude_diversity_fauna,longitude_diversity_fauna,jenis_hewan,deskripsi,jumlah,keterangan,created_by,created_time)
+        $insert = DB::insert(" INSERT INTO yakopi_detail_diversity_fauna (id_detail_diversity_fauna,id_diversity_fauna,latitude_diversity_fauna,longitude_diversity_fauna,jenis_hewan,deskripsi,jumlah,keterangan,created_by,created_time)
         VALUES (NULL,?,?,?,?,?,?,?,?,?)",
         [$id_diversity_fauna,$latitude_diversity_fauna,$longitude_diversity_fauna,$jenis_hewan,$deskripsi,$jumlah,$keterangan,$created_by,$created_time]);
         return [
@@ -5243,13 +5249,13 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
         $id = $request->id_detail_diversity_fauna;
 
-        $cek = DB::select("SELECT * FROM yakopi_detail_diveristy_fauna WHERE id_detail_diversity_fauna=?",[$id]);
+        $cek = DB::select("SELECT * FROM yakopi_detail_diversity_fauna WHERE id_detail_diversity_fauna=?",[$id]);
 
         if(count($cek)>0){
             $cekStatus = DB::select("SELECT * FROM yakopi_diversity_fauna WHERE id_diversity_fauna=?",[$cek[0]->id_diversity_fauna]);
 
             if($cekStatus[0]->status=="0"){
-                $delete = DB::delete("DELETE FROM yakopi_detail_diveristy_fauna WHERE id_detail_diversity_fauna=?",[$id]);
+                $delete = DB::delete("DELETE FROM yakopi_detail_diversity_fauna WHERE id_detail_diversity_fauna=?",[$id]);
 
                 return [
                     "success"=>true,
@@ -5269,7 +5275,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         }
     });
 
-    Route::get("/research/photoDataDiversityFauna", function(Request $request){
+    Route::post("/research/photoDataDiversityFauna", function(Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
@@ -5318,7 +5324,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $cek = DB::select("SELECT * FROM yakopi_diversity_fauna_photo WHERE id_diversity_fauna_photo=?",[$id]);
 
         if(count($cek)>0){
-            $cekDetail = DB::select("SELECT * FROM yakopi_detail_diveristy_fauna WHERE id_detail_diversity_fauna=?",[$cek[0]->id_detail_diversity_fauna]);
+            $cekDetail = DB::select("SELECT * FROM yakopi_detail_diversity_fauna WHERE id_detail_diversity_fauna=?",[$cek[0]->id_detail_diversity_fauna]);
 
             $cekStatus = DB::select("SELECT * FROM yakopi_diversity_fauna WHERE id_diversity_fauna=?",[$cekDetail[0]->id_diversity_fauna]);
 
@@ -5381,7 +5387,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
         WHERE la.id_diversity_flora	=?",[$id]);
 
-        $detail = DB::select("SELECT * FROM yakopi_detail_diveristy_flora WHERE id_diversity_flora=?",[$data[0]->id_diversity_flora]);
+        $detail = DB::select("SELECT * FROM yakopi_detail_diversity_flora WHERE id_diversity_flora=?",[$data[0]->id_diversity_flora]);
 
         return [
             "success"=>true,
@@ -5389,6 +5395,22 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
             "detail"=>$detail
         ];
 
+    });
+
+    Route::post("/research/approve-diversityFlora", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_diversity_flora;
+        $status = 1;
+
+        $data = DB::update("UPDATE yakopi_diversity_flora SET status=? WHERE id_diversity_flora=?",[$status,$id]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil mengkonfirmasi land assessment"
+        ];
     });
 
     Route::post("/research/diversityFlora/add", function(Request $request){
@@ -5407,19 +5429,18 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $site_code = $request->site_code;
         $plot_code = $request->plot_code;
         $area = $request->area;
-        $jumlah = $request->jumlah;
         $monitoring = $request->monitoring;
         $catatan_1 = $request->catatan_1;
         $catatan_2 = $request->catatan_2;
         $dilaporkan_oleh = $request->dilaporkan_oleh;
-        $ttd_pelapor = '';
+        $ttd_surveyor = '';
         $created_by = $json->id_pengguna;
         $created_time = date("Y-m-d H:i:s");
         $status = "0";
 
-        $insert = DB::insert(" INSERT INTO yakopi_diversity_flora (id_diversity_flora,id_project,id_provinces,id_cities,id_districts,latitude,longitude,nama_desa,nama_dusun,site_code,plot_code,area,jumlah,monitoring,catatan_1,catatan_2,dilaporkan_oleh,ttd_pelapor,created_by,created_time,status)
-        VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-        [$id_project,$id_provinces,$id_cities,$id_districts,$latitude,$longitude,$nama_desa,$nama_dusun,$site_code,$plot_code,$area,$jumlah,$monitoring,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time,$status]);
+        $insert = DB::insert(" INSERT INTO yakopi_diversity_flora (id_diversity_flora,id_project,id_provinces,id_cities,id_districts,latitude,longitude,nama_desa,nama_dusun,site_code,plot_code,area,monitoring,catatan_1,catatan_2,dilaporkan_oleh,ttd_surveyor,created_by,created_time,status)
+        VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        [$id_project,$id_provinces,$id_cities,$id_districts,$latitude,$longitude,$nama_desa,$nama_dusun,$site_code,$plot_code,$area,$monitoring,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_surveyor,$created_by,$created_time,$status]);
 
         return [
             "success"=>true,
@@ -5460,14 +5481,14 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
     });
 
-    Route::get("/research/dataDiversityFlora", function(Request $request){
+    Route::post("/research/dataDiversityFlora", function(Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
 
         $id = $request->id_diversity_flora;
 
-        $data = DB::select(" SELECT * FROM yakopi_detail_diveristy_flora WHERE id_diversity_flora=?",[$id]);
+        $data = DB::select(" SELECT * FROM yakopi_detail_diversity_flora WHERE id_diversity_flora=?",[$id]);
 
         return [
             "success"=>true,
@@ -5483,7 +5504,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
         $id_diversity_flora = $request->id_diversity_flora;
         $latitude_diversity_flora = $request->coordinate["latitude"];
-        $longitude_diversity_flora = $request->coordinate["longitude"];
+        $longtitude_diversity_flora = $request->coordinate["longitude"];
         $jenis_tumbuhan = $request->jenis_tumbuhan;
         $deskripsi = $request->deskripsi;
         $jumlah = $request->jumlah;
@@ -5491,9 +5512,9 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $created_by = $json->id_pengguna;
         $created_time = date("Y-m-d H:i:s");
 
-        $insert = DB::insert(" INSERT INTO yakopi_detail_diveristy_flora (id_detail_diversity_flora,id_diversity_flora,latitude_diversity_flora,longitude_diversity_flora,jenis_tumbuhan,deskripsi,jumlah,keterangan,created_by,created_time)
+        $insert = DB::insert(" INSERT INTO yakopi_detail_diversity_flora (id_detail_diversity_flora,id_diversity_flora,latitude_diversity_flora,longtitude_diversity_flora,jenis_tumbuhan,deskripsi,jumlah,keterangan,created_by,created_time)
         VALUES (NULL,?,?,?,?,?,?,?,?,?)",
-        [$id_diversity_flora,$latitude_diversity_flora,$longitude_diversity_flora,$jenis_tumbuhan,$deskripsi,$jumlah,$keterangan,$created_by,$created_time]);
+        [$id_diversity_flora,$latitude_diversity_flora,$longtitude_diversity_flora,$jenis_tumbuhan,$deskripsi,$jumlah,$keterangan,$created_by,$created_time]);
         return [
             "success"=>true,
             "msg"=>"Data berhasil ditambahkan"
@@ -5507,13 +5528,13 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
         $id = $request->id_detail_diversity_flora;
 
-        $cek = DB::select("SELECT * FROM yakopi_detail_diveristy_flora WHERE id_detail_diversity_flora=?",[$id]);
+        $cek = DB::select("SELECT * FROM yakopi_detail_diversity_flora WHERE id_detail_diversity_flora=?",[$id]);
 
         if(count($cek)>0){
             $cekStatus = DB::select("SELECT * FROM yakopi_diversity_flora WHERE id_diversity_flora=?",[$cek[0]->id_diversity_flora]);
 
             if($cekStatus[0]->status=="0"){
-                $delete = DB::delete("DELETE FROM yakopi_detail_diveristy_flora WHERE id_detail_diversity_flora=?",[$id]);
+                $delete = DB::delete("DELETE FROM yakopi_detail_diversity_flora WHERE id_detail_diversity_flora=?",[$id]);
 
                 return [
                     "success"=>true,
@@ -5533,7 +5554,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         }
     });
 
-    Route::get("/research/photoDataDiversityFlora", function(Request $request){
+    Route::post("/research/photoDataDiversityFlora", function(Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
@@ -5582,7 +5603,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $cek = DB::select("SELECT * FROM yakopi_diversity_flora_photo WHERE id_diversity_flora_photo=?",[$id]);
 
         if(count($cek)>0){
-            $cekDetail = DB::select("SELECT * FROM yakopi_detail_diveristy_flora WHERE id_detail_diversity_flora=?",[$cek[0]->id_detail_diversity_flora]);
+            $cekDetail = DB::select("SELECT * FROM yakopi_detail_diversity_flora WHERE id_detail_diversity_flora=?",[$cek[0]->id_detail_diversity_flora]);
 
             $cekStatus = DB::select("SELECT * FROM yakopi_diversity_flora WHERE id_diversity_flora=?",[$cekDetail[0]->id_diversity_flora]);
 
@@ -5630,29 +5651,20 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         ];
     });
 
-    Route::get("/research/hama", function(Request $request){
+    Route::post("/research/approve-hama", function (Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
 
         $id = $request->id_hama;
+        $status = 1;
 
-        $data = DB::select("
-        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_hama AS la
-        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
-        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
-        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
-        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
-        WHERE la.id_hama=?",[$id_hama]);
-
-        $detail = DB::select("SELECT * FROM yakopi_detail_hama WHERE id_hama=?",[$data[0]->id_hama]);
+        $data = DB::update("UPDATE yakopi_hama SET status=? WHERE id_hama=?",[$status,$id]);
 
         return [
             "success"=>true,
-            "data"=>$data,
-            "detail"=>$detail
+            "msg"=>"Berhasil mengkonfirmasi land assessment"
         ];
-
     });
 
     Route::post("/research/hama/add", function(Request $request){
@@ -5671,19 +5683,18 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $site_code = $request->site_code;
         $plot_code = $request->plot_code;
         $area = $request->area;
-        $jumlah = $request->jumlah;
         $monitoring = $request->monitoring;
         $catatan_1 = $request->catatan_1;
         $catatan_2 = $request->catatan_2;
         $dilaporkan_oleh = $request->dilaporkan_oleh;
-        $ttd_pelapor = '';
+        $ttd_surveyor = '';
         $created_by = $json->id_pengguna;
         $created_time = date("Y-m-d H:i:s");
         $status = "0";
 
-        $insert = DB::insert(" INSERT INTO yakopi_hama (id_hama,id_project,id_provinces,id_cities,id_districts,latitude,longitude,nama_desa,nama_dusun,site_code,plot_code,area,jumlah,monitoring,catatan_1,catatan_2,dilaporkan_oleh,ttd_pelapor,created_by,created_time,status)
-        VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-        [$id_project,$id_provinces,$id_cities,$id_districts,$latitude,$longitude,$nama_desa,$nama_dusun,$site_code,$plot_code,$area,$jumlah,$monitoring,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time,$status]);
+        $insert = DB::insert(" INSERT INTO yakopi_hama (id_hama,id_project,id_provinces,id_cities,id_districts,latitude,longitude,nama_desa,nama_dusun,site_code,plot_code,area,monitoring,catatan_1,catatan_2,dilaporkan_oleh,ttd_surveyor,created_by,created_time,status)
+        VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        [$id_project,$id_provinces,$id_cities,$id_districts,$latitude,$longitude,$nama_desa,$nama_dusun,$site_code,$plot_code,$area,$monitoring,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_surveyor,$created_by,$created_time,$status]);
 
         return [
             "success"=>true,
@@ -5724,14 +5735,14 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
     });
 
-    Route::get("/research/detailHama", function(Request $request){
+    Route::post("/research/detailHama", function(Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
 
-        $id = $request->id_detail_hama;
+        $id = $request->id_hama;
 
-        $data = DB::select(" SELECT * FROM yakopi_detail_hama WHERE id_detail_hama=?",[$id]);
+        $data = DB::select(" SELECT * FROM yakopi_detail_hama WHERE id_hama=?",[$id]);
 
         return [
             "success"=>true,
@@ -5745,7 +5756,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
 
-        $id_detail_hama = $request->id_detail_hama;
+        $id_hama = $request->id_hama;
         $latitude_hama = $request->coordinate["latitude"];
         $longtitude_hama = $request->coordinate["longitude"];
         $jenis_hama = $request->jenis_hama;
@@ -5757,7 +5768,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
         $insert = DB::insert(" INSERT INTO yakopi_detail_hama (id_detail_hama,id_hama,latitude_hama,longtitude_hama,jenis_hama,deskripsi,jumlah,keterangan,created_by,created_time)
         VALUES (NULL,?,?,?,?,?,?,?,?,?)",
-        [$id_detail_hama,$latitude_hama,$longtitude_hama,$jenis_hama,$deskripsi,$jumlah,$keterangan,$created_by,$created_time]);
+        [$id_hama,$latitude_hama,$longtitude_hama,$jenis_hama,$deskripsi,$jumlah,$keterangan,$created_by,$created_time]);
         return [
             "success"=>true,
             "msg"=>"Data berhasil ditambahkan"
@@ -5797,7 +5808,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         }
     });
 
-    Route::get("/research/photoDataHama", function(Request $request){
+    Route::post("/research/photoDataHama", function(Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
@@ -5825,7 +5836,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $created_by = $json->id_pengguna;
         $created_time = date("Y-m-d H:i:s");
 
-        $insert = DB::insert(" INSERT INTO yakopi_diversity_flora_photo (id_hama_photo,id_detail_hama,link_hama,file_hama,keterangan_hama,created_by,created_time)
+        $insert = DB::insert(" INSERT INTO yakopi_hama_photo (id_hama_photo,id_detail_hama,link_hama,file_hama,keterangan_hama,created_by,created_time)
         VALUES (NULL,?,?,?,?,?,?)",
         [$id_detail_hama,$link_hama,$file_hama,$keterangan_hama,$created_by,$created_time]);
 
@@ -5879,12 +5890,33 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
-
-        $data = DB::select("SELECT * FROM yakopi_fiskim");
+        $data = DB::select("
+        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_fiskim AS la
+        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+        ");
 
         return [
             "success"=>true,
             "data"=>$data
+        ];
+    });
+
+    Route::post("/research/approve-fiskim", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        $id = $request->id_fiskim;
+        $status = 1;
+
+        $data = DB::update("UPDATE yakopi_fiskim SET status=? WHERE id_fiskim=?",[$status,$id]);
+
+        return [
+            "success"=>true,
+            "msg"=>"Berhasil mengkonfirmasi land assessment"
         ];
     });
 
@@ -5904,19 +5936,18 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $site_code = $request->site_code;
         $plot_code = $request->plot_code;
         $area = $request->area;
-        $jumlah = $request->jumlah;
         $monitoring = $request->monitoring;
         $catatan_1 = $request->catatan_1;
         $catatan_2 = $request->catatan_2;
         $dilaporkan_oleh = $request->dilaporkan_oleh;
-        $ttd_pelapor = '';
+        $ttd_surveyor = '';
         $created_by = $json->id_pengguna;
         $created_time = date("Y-m-d H:i:s");
         $status = "0";
 
-        $insert = DB::insert(" INSERT INTO yakopi_fiskim (id_fiskim,id_project,id_provinces,id_cities,id_districts,latitude,longitude,nama_desa,nama_dusun,site_code,plot_code,area,jumlah,monitoring,catatan_1,catatan_2,dilaporkan_oleh,ttd_pelapor,created_by,created_time,status)
-        VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-        [$id_project,$id_provinces,$id_cities,$id_districts,$latitude,$longitude,$nama_desa,$nama_dusun,$site_code,$plot_code,$area,$jumlah,$monitoring,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time,$status]);
+        $insert = DB::insert(" INSERT INTO yakopi_fiskim (id_fiskim,id_project,id_provinces,id_cities,id_districts,latitude,longitude,nama_desa,nama_dusun,site_code,plot_code,area,monitoring,catatan_1,catatan_2,dilaporkan_oleh,ttd_surveyor,created_by,created_time,status)
+        VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        [$id_project,$id_provinces,$id_cities,$id_districts,$latitude,$longitude,$nama_desa,$nama_dusun,$site_code,$plot_code,$area,$monitoring,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_surveyor,$created_by,$created_time,$status]);
 
         return [
             "success"=>true,
@@ -5958,17 +5989,20 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         }
     });
 
-    Route::get("/research/detailFiskim", function(Request $request){
+    Route::post("/research/detailFiskim", function(Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
 
-        $data = DB::select("SELECT * FROM yakopi_detail_fiskim");
+        $id = $request->id_fiskim;
+
+        $data = DB::select(" SELECT * FROM yakopi_detail_fiskim WHERE id_fiskim=?",[$id]);
 
         return [
             "success"=>true,
             "data"=>$data
         ];
+
     });
 
     Route::post("/research/detailFiskim/add", function(Request $request){
