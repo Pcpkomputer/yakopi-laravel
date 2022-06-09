@@ -131,7 +131,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
     // PHOTO API START
 
     Route::get("/photo_restoration", function (Request $request){
-        $photo = DB::select("SELECT * FROM yakopi_photo_restoration ORDER BY RAND() LIMIT 10");
+        $photo = DB::select("SELECT * FROM yakopi_photo_restoration ORDER BY RAND() LIMIT 1");
         return [
             "success"=>true,
             "data"=>$photo
@@ -139,7 +139,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
     });
 
     Route::get("/photo_comdev", function (Request $request){
-        $photo = DB::select("SELECT * FROM yakopi_photo_comdev ORDER BY RAND() LIMIT 10");
+        $photo = DB::select("SELECT * FROM yakopi_photo_comdev ORDER BY RAND() LIMIT 1");
         return [
             "success"=>true,
             "data"=>$photo
@@ -147,7 +147,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
     });
 
     Route::get("/photo_research", function (Request $request){
-        $photo = DB::select("SELECT * FROM yakopi_photo_research ORDER BY RAND() LIMIT 10");
+        $photo = DB::select("SELECT * FROM yakopi_photo_research ORDER BY RAND() LIMIT 1");
         return [
             "success"=>true,
             "data"=>$photo
