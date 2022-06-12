@@ -439,17 +439,65 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
 
-        $land_assessment = DB::select("
-        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_land_assessment AS la
-        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
-        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
-        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
-        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
-        ");
-        return [
-            "success"=>true,
-            "data"=>$land_assessment
-        ];
+        if($json->hak_akses=="member"){
+            $land_assessment = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_land_assessment AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=?",[$json->id_pengguna]);
+            return [
+                "success"=>true,
+                "data"=>$land_assessment
+            ];
+        }else{
+            $land_assessment = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_land_assessment AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.status='1' OR la.created_by=$json->id_pengguna
+            ");
+            return [
+                "success"=>true,
+                "data"=>$land_assessment
+            ];
+        }
+    });
+
+    Route::get("/count-land-assessment", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        if($json->hak_akses=="member"){
+            $land_assessment = DB::select("
+            SELECT COUNT(*) AS total FROM yakopi_land_assessment AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=?",[$json->id_pengguna]);
+            return [
+                "success"=>true,
+                "data"=>$land_assessment[0]->total
+            ];
+        }else{
+            $land_assessment = DB::select("
+            SELECT COUNT(*) AS total FROM yakopi_land_assessment AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.status='1' OR la.created_by=$json->id_pengguna
+            ");
+            return [
+                "success"=>true,
+                "data"=>$land_assessment[0]->total
+            ];
+        }
     });
 
     Route::get("/land-assessment/{id}", function (Request $request, $id){
@@ -815,17 +863,60 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
 
-        $seed_collecting = DB::select("
-        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_collecting_seed AS la
-        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
-        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
-        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
-        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
-        ");
+        if($json->hak_akses=="member"){
+            $seed_collecting = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_collecting_seed AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $seed_collecting = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_collecting_seed AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.status='1' OR la.created_by=$json->id_pengguna
+            ");
+        }
 
         return [
             "success"=>true,
             "data"=>$seed_collecting
+        ];
+    });
+
+    Route::get("/count-seed-collecting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        if($json->hak_akses=="member"){
+            $count_seed_collecting = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_collecting_seed AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $count_seed_collecting = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_collecting_seed AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.status='1' OR la.created_by=$json->id_pengguna
+            ");
+        }
+
+        return [
+            "success"=>true,
+            "data"=>$count_seed_collecting[0]->jumlah
         ];
     });
 
@@ -1274,13 +1365,25 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
 
-        $nurseryActivity = DB::select("
-        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_nursery_activity AS la
-        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
-        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
-        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
-        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
-        ");
+        if($json->hak_akses=="member"){
+            $nurseryActivity = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_nursery_activity AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $nurseryActivity = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_nursery_activity AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
 
         return [
             "success"=>true,
@@ -1288,6 +1391,39 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         ];
 
     });
+
+    Route::get("/count-nursery-activity", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        if($json->hak_akses=="member"){
+            $countNurseryActivity = DB::select("
+            SELECT COUNT(*) AS total FROM yakopi_nursery_activity AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $countNurseryActivity = DB::select("
+            SELECT COUNT(*) AS total FROM yakopi_nursery_activity AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
+
+        return [
+            "success"=>true,
+            "data"=>$countNurseryActivity[0]->total
+        ];
+
+    });
+
 
     Route::get("/nursery-activity/{id_nursery_activity}", function (Request $request,$id_nursery_activity){
         $token = $request->bearerToken();
@@ -1743,17 +1879,61 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
         $id = $request->id_planting_action;
 
-        $planting = DB::select("
-        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_planting_action AS la
-        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
-        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
-        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
-        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
-        ");
+        if($json->hak_akses=="member"){
+            $planting = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_planting_action AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $planting = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_planting_action AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
 
         return [
             "success"=>true,
             "data"=>$planting
+        ];
+
+    });
+
+    Route::get("/count-planting-action", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        if($json->hak_akses=="member"){
+            $planting = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_planting_action AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $planting = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_planting_action AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
+
+        return [
+            "success"=>true,
+            "data"=>$planting[0]->jumlah
         ];
 
     });
@@ -2235,13 +2415,25 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
 
-        $transport = DB::select("
-        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_transport AS la
-        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
-        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
-        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
-        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
-        ");
+        if($json->hak_akses=="member"){
+            $transport = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_transport AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $transport = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_transport AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
 
         return [
             "success"=>true,
@@ -2249,6 +2441,39 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         ];
 
     });
+
+    Route::get("/count-transport", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        if($json->hak_akses=="member"){
+            $transport = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_transport AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $transport = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_transport AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
+
+        return [
+            "success"=>true,
+            "data"=>$transport[0]->jumlah
+        ];
+
+    });
+
 
     Route::get("/transport/{id_transport}", function (Request $request,$id_transport){
         $token = $request->bearerToken();
@@ -2729,17 +2954,61 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
 
-        $data = DB::select("
-        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_growth AS la
-        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
-        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
-        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
-        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
-        ");
+        if($json->hak_akses=="member"){
+            $data = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_growth AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $data = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_growth AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
 
         return [
             "success"=>true,
             "data"=>$data
+        ];
+
+    });
+
+    Route::get("/count-growth", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        if($json->hak_akses=="member"){
+            $data = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_growth AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $data = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_growth AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
+
+        return [
+            "success"=>true,
+            "data"=>$data[0]->jumlah
         ];
 
     });
@@ -2986,14 +3255,25 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
 
-
-        $planting = DB::select("
-        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_replanting AS la
-        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
-        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
-        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
-        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
-        ");
+        if($json->hak_akses=="member"){
+            $planting = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_replanting AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $planting = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_replanting AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
 
         return [
             "success"=>true,
@@ -3001,6 +3281,40 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         ];
 
     });
+
+    Route::get("/count-replanting", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        if ($json->hak_akses=="member") {
+            $data = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_replanting AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $data = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_replanting AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
+
+        return [
+            "success"=>true,
+            "data"=>$data[0]->jumlah
+        ];
+
+    });
+
+
 
     Route::get("/replanting/{id_replanting}", function (Request $request,$id_replanting){
         $token = $request->bearerToken();
@@ -3477,18 +3791,48 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $json = json_decode($parsed);
 
         $id = $request->id_subtitute_plot;
-
-        $data = DB::select("
-        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_subtitute_plot AS la
-        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
-        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
-        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
-        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
-        ");
+        
+        if($json->hak_akses=="member"){
+            $data = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_subtitute_plot AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $data = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_subtitute_plot AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
 
         return [
             "success"=>true,
             "data"=>$data
+        ];
+
+    });
+
+    Route::get("/count-subtitute-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        if($json->hak_akses=="member"){
+            $data = DB::select(" SELECT COUNT(*) AS jumlah FROM yakopi_subtitute_plot WHERE created_by=$json->id_pengguna ");
+        }else{
+            $data = DB::select(" SELECT COUNT(*) AS jumlah FROM yakopi_subtitute_plot WHERE created_by=$json->id_pengguna OR status=1 ");
+        }
+
+        return [
+            "success"=>true,
+            "data"=>$data[0]->jumlah
         ];
 
     });
@@ -3964,17 +4308,51 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
 
-        $data = DB::select("
-        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_replacement_plot AS la
-        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
-        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
-        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
-        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
-        ");
+        if($json->hak_akses=="member"){
+            $data = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_replacement_plot AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $data = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_replacement_plot AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
 
         return [
             "success"=>true,
             "data"=>$data
+        ];
+
+    });
+
+    Route::get("/count-replacement-plot", function (Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+        
+        if($json->hak_akses=="member"){
+            $data = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_replacement_plot WHERE created_by=$json->id_pengguna
+            ");
+        }else{
+            $data = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_replacement_plot WHERE created_by=$json->id_pengguna OR status=1
+            ");
+        }
+
+        return [
+            "success"=>true,
+            "data"=>$data[0]->jumlah
         ];
 
     });
@@ -4446,11 +4824,6 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
 
     // REPLACEMENT PLOT END
 
-
-
-        
-
-
     // COMMUNITY DEVELOPMENT START
 
     Route::get("/community-register", function(Request $request){
@@ -4458,17 +4831,50 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
     
-        $community_development = DB::select("
-        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_community_register AS la
-        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
-        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
-        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
-        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
-        ");
+        if($json->hak_akses=="member"){
+            $community_development = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_community_register AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $community_development = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_community_register AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
     
         return [
             "success"=>true,
             "data"=>$community_development
+        ];
+    });
+
+    Route::get("/count-community-register", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+    
+        if($json->hak_akses=="member"){
+            $community_development = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_community_register WHERE created_by=$json->id_pengguna
+            ");
+        }else{
+            $community_development = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_community_register WHERE created_by=$json->id_pengguna OR status=1
+            ");
+        }
+
+        return [
+            "success"=>true,
+            "data"=>$community_development[0]->jumlah
         ];
     });
 
@@ -4636,17 +5042,60 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
     
-        $silvoshery = DB::select("
-        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_silvoshery AS la
-        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
-        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
-        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
-        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
-        ");
+        if($json->hak_akses=="member"){
+            $silvoshery = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_silvoshery AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $silvoshery = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_silvoshery AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
     
         return [
             "success"=>true,
             "data"=>$silvoshery
+        ];
+    });
+
+    Route::get("/count-silvoshery", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+    
+        if($json->hak_akses=="member"){
+            $silvoshery = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_silvoshery AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $silvoshery = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_silvoshery AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
+    
+        return [
+            "success"=>true,
+            "data"=>$silvoshery[0]->jumlah
         ];
     });
 
@@ -4820,17 +5269,60 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
         
-        $data = DB::select("
-        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_growth_research AS la
-        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
-        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
-        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
-        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
-        ");
+        if($json->hak_akses=="member"){
+            $data = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_growth_research AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $data = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_growth_research AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
 
         return [
             "success"=>true,
             "data"=>$data
+        ];
+    });
+
+    Route::get("/count-growth-research", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+        
+        if($json->hak_akses=="member"){
+            $data = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_growth_research AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $data = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_growth_research AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
+
+        return [
+            "success"=>true,
+            "data"=>$data[0]->jumlah
         ];
     });
 
@@ -4864,7 +5356,7 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $insert = DB::insert(" INSERT INTO yakopi_growth_research 
         (id_growth_research,id_project,id_provinces,id_cities,id_districts,nama_desa,nama_dusun,lat_growth_research,long_growth_research,site_code,plot_code,area,spesies,jumlah,monitoring_ke,catatan_1,catatan_2,dilaporkan_oleh,ttd_pelapor,created_by,created_time,status)
         VALUES (null,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
-        [$id_project,$id_provinces,$id_cities,$id_districts,$lat_growth_research,$long_growth_research,$nama_desa,$nama_dusun,$site_code,$plot_code,$area,$spesies,$jumlah,$monitoring_ke,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time,$status]);
+        [$id_project,$id_provinces,$id_cities,$id_districts,$nama_desa,$nama_dusun,$lat_growth_research,$long_growth_research,$site_code,$plot_code,$area,$spesies,$jumlah,$monitoring_ke,$catatan_1,$catatan_2,$dilaporkan_oleh,$ttd_pelapor,$created_by,$created_time,$status]);
 
         return [
             "success"=>true,
@@ -5079,17 +5571,50 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
         
-        $data = DB::select("
-        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_diversity_fauna AS la
-        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
-        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
-        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
-        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
-        ");
+        if($json->hak_akses=="member"){
+            $data = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_diversity_fauna AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $data = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_diversity_fauna AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
 
         return [
             "success"=>true,
             "data"=>$data
+        ];
+    });
+
+    Route::get("/count-diversity-fauna", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        if($json->hak_akses=="member"){
+            $data = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_diversity_fauna WHERE created_by=$json->id_pengguna
+            ");
+        }else{
+            $data = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_diversity_fauna WHERE created_by=$json->id_pengguna OR status=1
+            ");
+        }
+
+        return [
+            "success"=>true,
+            "data"=>$data[0]->jumlah
         ];
     });
 
@@ -5358,17 +5883,50 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
         
-        $data = DB::select("
-        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_diversity_flora AS la
-        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
-        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
-        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
-        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
-        ");
+        if($json->hak_akses=="member"){
+            $data = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_diversity_flora AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $data = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_diversity_flora AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
 
         return [
             "success"=>true,
             "data"=>$data
+        ];
+    });
+
+    Route::get("/count-diversity-flora", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        if($json->hak_akses=="member"){
+            $data = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_diversity_flora WHERE created_by=$json->id_pengguna
+            ");
+        }else{
+            $data = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_diversity_flora WHERE created_by=$json->id_pengguna OR status=1
+            ");
+        }
+
+        return [
+            "success"=>true,
+            "data"=>$data[0]->jumlah
         ];
     });
 
@@ -5637,17 +6195,50 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
         
-        $data = DB::select("
-        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_hama AS la
-        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
-        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
-        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
-        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
-        ");
+        if($json->hak_akses=="member"){
+            $data = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_hama AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $data = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_hama AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
 
         return [
             "success"=>true,
             "data"=>$data
+        ];
+    });
+
+    Route::get("/count-hama", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        if($json->hak_akses=="member"){
+            $data = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_hama WHERE created_by=$json->id_pengguna
+            ");
+        }else{
+            $data = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_hama WHERE created_by=$json->id_pengguna OR status=1
+            ");
+        }
+
+        return [
+            "success"=>true,
+            "data"=>$data[0]->jumlah
         ];
     });
 
@@ -5890,13 +6481,26 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
         $json = json_decode($parsed);
-        $data = DB::select("
-        SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_fiskim AS la
-        INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
-        INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
-        INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
-        INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
-        ");
+
+        if($json->hak_akses=="member"){
+            $data = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_fiskim AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $data = DB::select("
+            SELECT project.nama_project,provinces.prov_name,cities.city_name,districts.dis_name,la.* FROM yakopi_fiskim AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
 
         return [
             "success"=>true,
@@ -5904,6 +6508,38 @@ Route::middleware([AuthMasterMiddleware::class])->group(function () {
         ];
     });
 
+    Route::get("/count-fiskim", function(Request $request){
+        $token = $request->bearerToken();
+        $parsed = Crypt::decryptString($token);
+        $json = json_decode($parsed);
+
+        if($json->hak_akses=="member"){
+            $data = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_fiskim AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna
+            ");
+        }else{
+            $data = DB::select("
+            SELECT COUNT(*) AS jumlah FROM yakopi_fiskim AS la
+            INNER JOIN yakopi_project AS project ON project.id_project=la.id_project
+            INNER JOIN yakopi_provinces AS provinces ON provinces.prov_id=la.id_provinces
+            INNER JOIN yakopi_cities AS cities ON cities.city_id=la.id_cities
+            INNER JOIN yakopi_districts AS districts ON districts.dis_id=la.id_districts
+            WHERE la.created_by=$json->id_pengguna OR la.status=1
+            ");
+        }
+
+        return [
+            "success"=>true,
+            "data"=>$data[0]->jumlah
+        ];
+
+    });
+        
     Route::post("/research/approve-fiskim", function (Request $request){
         $token = $request->bearerToken();
         $parsed = Crypt::decryptString($token);
